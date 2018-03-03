@@ -85,27 +85,70 @@ class CubieCube:
             self.eo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     def corner_multiply(self, b):
-        # compute resulting permutation and orientation or corners if applying
-        # sequence of permutations b to current cube. The rules, using the
-        # replaced by notation are (for example using the sequence F then R)
-        # (F*R)[UBR].c = F[R[UBR].c].c (i.e. the corner UBR is replaced by the
-        # corner at position R[UBR].c, and this corner is whatever F left there
-        # For the orientation we have
-        # (F*R)[UBR].o = F[R[UBR].c].o + R[UBR].o (i.e. the orientation is
-        # change in orientation due to F (first term plus the change due to R
+        """
+        Compute permutation and orientation of corners after applying
+        permutation represented by b to current cube.
+
+        Parameters
+        ----------
+        b : CubieCube
+            Permutation to apply represented as a CubieCube.
+
+        Notes
+        -----
+        We use "is replaced by" notation for the permutations. So b.cp[URF]
+        gives the index of the piece that replaces URF when applying b. To
+        explain the rules we use the example of first applying F then applying
+        R.
+
+        Under F we have URF<-UFL and under R we have UBR<-URF. Hence under FR
+        we have UBR<-UFL, leading to the rule
+
+        (F*R).cp[UBR] = F.cp[R.cp[UBR]]
+
+        The corner orientation arrays tell us the change in orientation of a
+        piece (based on where it ends up) due to that move. So for example
+        F.co[URF] = 1, which means that as UFL moves to URF under the F move,
+        its orientation increases by 1. To get the total change in orientation
+        of the piece that moves to UBR under FR we use the rule
+
+        (F*R).co[UBR] = F.co[R.cp[UBR]] + R.co[UBR].
+        """
         corner_perm = [self.cp[b.cp[i]] for i in range(8)]
         corner_ori = [(self.co[b.cp[i]] + b.co[i]) % 3 for i in range(8)]
         self.co = corner_ori[:]
         self.cp = corner_perm[:]
 
     def edge_multiply(self, b):
-        # Same as the corner_multiply function, but for the edges.
+        """
+        Compute permutation and orientation of edges after applying permutation
+        represented by b to current cube.
+
+        Parameters
+        ----------
+        b : CubieCube
+            Permutation to apply represented as a CubieCube.
+
+        Notes
+        -----
+        See docstring of corner_multiply (which operates analogously to this
+        method) for a description of how the update rules are derived.
+        """
         edge_perm = [self.ep[b.ep[i]] for i in range(12)]
         edge_ori = [(self.eo[b.ep[i]] + b.eo[i]) % 2 for i in range(12)]
         self.eo = edge_ori[:]
         self.ep = edge_perm[:]
 
     def multiply(self, b):
+        """
+        Compute permutation and orientation of edges and corners after applying
+        permutation represented by b to the current cube.
+
+        Parameters
+        ----------
+        b : CubieCube
+            Permutation to apply represented as a CubieCube
+        """
         self.corner_multiply(b)
         self.edge_multiply(b)
 
