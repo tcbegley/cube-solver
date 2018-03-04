@@ -1,6 +1,8 @@
 """
 This class describes cubes on the level of the cubies.
 """
+from functools import reduce
+
 import corner
 import edge
 import face_cube
@@ -25,47 +27,71 @@ def choose(n, k):
 # Moves on the cubie level, gives permutation and orientation after the moves
 # U, R, F, D, L, B resp from a clean cube. This will be used to compute move
 # tables and the composition rules.
-cpU = (corner.UBR, corner.URF, corner.UFL, corner.ULB,
-       corner.DFR, corner.DLF, corner.DBL, corner.DRB)
-coU = (0, 0, 0, 0, 0, 0, 0, 0)
-epU = (edge.UB, edge.UR, edge.UF, edge.UL, edge.DR, edge.DF,
-       edge.DL, edge.DB, edge.FR, edge.FL, edge.BL, edge.BR)
-eoU = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+_cpU = (
+    corner.UBR, corner.URF, corner.UFL, corner.ULB,
+    corner.DFR, corner.DLF, corner.DBL, corner.DRB
+)
+_coU = (0, 0, 0, 0, 0, 0, 0, 0)
+_epU = (
+    edge.UB, edge.UR, edge.UF, edge.UL, edge.DR, edge.DF,
+    edge.DL, edge.DB, edge.FR, edge.FL, edge.BL, edge.BR
+)
+_eoU = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-cpR = (corner.DFR, corner.UFL, corner.ULB, corner.URF,
-       corner.DRB, corner.DLF, corner.DBL, corner.UBR)
-coR = (2, 0, 0, 1, 1, 0, 0, 2)
-epR = (edge.FR, edge.UF, edge.UL, edge.UB, edge.BR, edge.DF,
-       edge.DL, edge.DB, edge.DR, edge.FL, edge.BL, edge.UR)
-eoR = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+_cpR = (
+    corner.DFR, corner.UFL, corner.ULB, corner.URF,
+    corner.DRB, corner.DLF, corner.DBL, corner.UBR
+)
+_coR = (2, 0, 0, 1, 1, 0, 0, 2)
+_epR = (
+    edge.FR, edge.UF, edge.UL, edge.UB, edge.BR, edge.DF,
+    edge.DL, edge.DB, edge.DR, edge.FL, edge.BL, edge.UR
+)
+_eoR = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-cpF = (corner.UFL, corner.DLF, corner.ULB, corner.UBR,
-       corner.URF, corner.DFR, corner.DBL, corner.DRB)
-coF = (1, 2, 0, 0, 2, 1, 0, 0)
-epF = (edge.UR, edge.FL, edge.UL, edge.UB, edge.DR, edge.FR,
-       edge.DL, edge.DB, edge.UF, edge.DF, edge.BL, edge.BR)
-eoF = (0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0)
+_cpF = (
+    corner.UFL, corner.DLF, corner.ULB, corner.UBR,
+    corner.URF, corner.DFR, corner.DBL, corner.DRB
+)
+_coF = (1, 2, 0, 0, 2, 1, 0, 0)
+_epF = (
+    edge.UR, edge.FL, edge.UL, edge.UB, edge.DR, edge.FR,
+    edge.DL, edge.DB, edge.UF, edge.DF, edge.BL, edge.BR
+)
+_eoF = (0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0)
 
-cpD = (corner.URF, corner.UFL, corner.ULB, corner.UBR,
-       corner.DLF, corner.DBL, corner.DRB, corner.DFR)
-coD = (0, 0, 0, 0, 0, 0, 0, 0)
-epD = (edge.UR, edge.UF, edge.UL, edge.UB, edge.DF, edge.DL,
-       edge.DB, edge.DR, edge.FR, edge.FL, edge.BL, edge.BR)
-eoD = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+_cpD = (
+    corner.URF, corner.UFL, corner.ULB, corner.UBR,
+    corner.DLF, corner.DBL, corner.DRB, corner.DFR
+)
+_coD = (0, 0, 0, 0, 0, 0, 0, 0)
+_epD = (
+    edge.UR, edge.UF, edge.UL, edge.UB, edge.DF, edge.DL,
+    edge.DB, edge.DR, edge.FR, edge.FL, edge.BL, edge.BR
+)
+_eoD = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-cpL = (corner.URF, corner.ULB, corner.DBL, corner.UBR,
-       corner.DFR, corner.UFL, corner.DLF, corner.DRB)
-coL = (0, 1, 2, 0, 0, 2, 1, 0)
-epL = (edge.UR, edge.UF, edge.BL, edge.UB, edge.DR, edge.DF,
-       edge.FL, edge.DB, edge.FR, edge.UL, edge.DL, edge.BR)
-eoL = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+_cpL = (
+    corner.URF, corner.ULB, corner.DBL, corner.UBR,
+    corner.DFR, corner.UFL, corner.DLF, corner.DRB
+)
+_coL = (0, 1, 2, 0, 0, 2, 1, 0)
+_epL = (
+    edge.UR, edge.UF, edge.BL, edge.UB, edge.DR, edge.DF,
+    edge.FL, edge.DB, edge.FR, edge.UL, edge.DL, edge.BR
+)
+_eoL = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-cpB = (corner.URF, corner.UFL, corner.UBR, corner.DRB,
-       corner.DFR, corner.DLF, corner.ULB, corner.DBL)
-coB = (0, 0, 1, 2, 0, 0, 2, 1)
-epB = (edge.UR, edge.UF, edge.UL, edge.BR, edge.DR, edge.DF,
-       edge.DL, edge.BL, edge.FR, edge.FL, edge.UB, edge.DB)
-eoB = (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1)
+_cpB = (
+    corner.URF, corner.UFL, corner.UBR, corner.DRB,
+    corner.DFR, corner.DLF, corner.ULB, corner.DBL
+)
+_coB = (0, 0, 1, 2, 0, 0, 2, 1)
+_epB = (
+    edge.UR, edge.UF, edge.UL, edge.BR, edge.DR, edge.DF,
+    edge.DL, edge.BL, edge.FR, edge.FL, edge.UB, edge.DB
+)
+_eoB = (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1)
 
 
 class CubieCube:
@@ -152,8 +178,11 @@ class CubieCube:
         self.corner_multiply(b)
         self.edge_multiply(b)
 
-    def inverse_cubiecube(self, cube):
-        # computes the inverse cube
+    def inverse_cubiecube(self):
+        """
+        Compute the inverse of the current cube.
+        """
+        cube = CubieCube()
         for e in range(12):
             cube.ep[self.ep[e]] = e
         for e in range(12):
@@ -163,11 +192,12 @@ class CubieCube:
         for c in range(8):
             ori = self.co[cube.cp[c]]
             cube.co[c] = (-ori) % 3
+        return cube
 
-    # convert cubiecube to facecube
     def to_facecube(self):
-        # use look-up tables in facecube to get colours of the facelets from
-        # cubiecube representation.
+        """
+        Convert CubieCube to FaceCube.
+        """
         ret = face_cube.FaceCube()
         for i in range(8):
             j = self.cp[i]
@@ -184,8 +214,12 @@ class CubieCube:
                 ret.f[facelet_index] = face_cube.edge_color[j][k]
         return ret
 
+    @property
     def corner_parity(self):
-        # parity of the corner permutation.
+        """
+        Corner parity of the CubieCube. Cube is solveable if and only if this
+        matches the edge parity.
+        """
         s = 0
         for i in range(7, 0, -1):
             for j in range(i - 1, - 1, -1):
@@ -193,8 +227,12 @@ class CubieCube:
                     s += 1
         return s % 2
 
+    @property
     def edge_parity(self):
-        # parity of the edge permutation. cube is solvable iff this matches corner parity
+        """
+        Edge parity of the CubieCube. Cube is solveable if and only if this
+        matches the corner parity.
+        """
         s = 0
         for i in range(11, 0, -1):
             for j in range(i - 1, - 1, -1):
@@ -203,36 +241,82 @@ class CubieCube:
         return s % 2
 
     # ----------   Phase 1 Coordinates  ---------- #
-    def get_twist(self):
-        # compute the corner orientation coordinate
-        # 0 <= ret < 3^7
-        ret = 0
-        for i in range(7):
-            ret = 3 * ret + self.co[i]
-        return ret
+    @property
+    def twist(self):
+        """
+        Compute twist, the coordinate representing corner orientation. We take
+        the orientation of the first 7 corners, represented as 0, 1 or 2 as
+        there are three possibilities, and view that as a ternary number in the
+        range 0, ..., 3^7 - 1.
 
-    def set_twist(self, twist):
-        # compute corner orientations from twist coordinate.
-        # sum is used to find orientation of 8th corner (orientations sum to multiple of 3)
+        Notes
+        -----
+        The orientation of the first eleven corners determines the orientation
+        of the last, hence we only include the orientation of the first 7
+        corners in the calculation of twist.
+        """
+        return reduce(lambda x, y: 3 * x + y, self.co[:7])
+
+    @twist.setter
+    def twist(self, twist):
+        """
+        Set the twist of the cube. Each of the values 0, ..., 3^7-1 determines
+        a distinct way of orienting each of the 8 corners.
+
+        Parameters
+        ----------
+        twist : int
+            Orientation of the 8 corners encoded as twist coordinate. Must
+            satisfy 0 <= twist < 3^7.
+        """
+        if not 0 <= twist < 3**7:
+            raise ValueError(
+                "{} is out of range for twist, must take values in "
+                "0, ..., 2186."
+                .format(twist)
+            )
         sum = 0
         for i in range(7):
             x = twist % 3
             self.co[6 - i] = x
             sum += x
-            twist /= 3
+            twist //= 3
         self.co[7] = (-sum) % 3
 
-    def get_flip(self):
-        # compute the edge flip coordinate
-        # 0 <= ret < 2^11
-        ret = 0
-        for i in range(11):
-            ret = 2 * ret + self.eo[i]
-        return ret
+    @property
+    def flip(self):
+        """
+        Compute flip, the coordinate representing edge orientation. We take
+        the orientation of the first 11 edges, represented as 0 or 1 as there
+        are two possibilities, and view that as a binary number in the range
+        0, ..., 2^11 - 1.
 
-    def set_flip(self, flip):
-        # compute edge flips from flip coordinate
-        # sum is used to find flip of 12th edge (flips sum to a multiple of 2)
+        Notes
+        -----
+        The orientation of the first eleven edges determines the orientation
+        of the last, hence we only include the orientation of the first 11
+        edges in the calculation of flip.
+        """
+        return reduce(lambda x, y: 2 * x + y, self.eo[:11])
+
+    @flip.setter
+    def flip(self, flip):
+        """
+        Set the flip of the cube. Each of the values 0, ..., 2^11-1 determines
+        a distinct way of orienting each of the 12 edges.
+
+        Parameters
+        ----------
+        flip : int
+            Orientation of the 12 corners encoded as flip coordinate. Must
+            satisfy 0 <= flip < 2^11.
+        """
+        if not 0 <= flip < 2**11:
+            raise ValueError(
+                "{} is out of range for flip, must take values in "
+                "0, ..., 2047."
+                .format(flip)
+            )
         sum = 0
         for i in range(11):
             x = flip % 2
@@ -241,9 +325,18 @@ class CubieCube:
             flip /= 2
         self.eo[11] = (-sum) % 2
 
-    def get_slice(self):
-        # describes the position (but not order) of the 4 edges FR, FL, BL, BR
-        # 0 <= ret < 12C4
+    @property
+    def slice(self):
+        """
+        Compute slice, the coordinate representing position, but not the order,
+        of the 4 edges FR, FL, BL, BR. These 4 edges must be in the middle
+        layer for phase 2 to begin. If they are in the middle layer, slice will
+        have the value 0.
+
+        Since there are 12 possible positions and we care only about those 4
+        edges, slice takes values in the range 0, ..., 12C4 - 1.
+        """
+        # TODO: See if this can be streamlined or made more intuitive.
         ret, s = 0, 0
         for j in range(12):
             if 8 <= self.ep[j] < 12:
@@ -252,11 +345,31 @@ class CubieCube:
                 ret += choose(j, s - 1)
         return ret
 
-    def set_slice(self, udslice):
-        # computes positions (but not order) of the 4 edges FR, FL, BL, BR
+    @slice.setter
+    def slice(self, udslice):
+        """
+        Set the slice of the cube. Each of the values 0, ..., 12C4 - 1
+        determines a distinct set of 4 positions for the edges FR, FL, BL, BR
+        to occupy. Note that it does not determine the order of these edges.
+
+        Parameters
+        ----------
+        udslice : int
+            Position of the 4 aforementioned edges encoded as slice coordinate.
+            Must satisfy 0 <= slice < 12C4.
+        """
+        if not 0 <= udslice < choose(12, 4):
+            raise ValueError(
+                "{} is out of range for udslice, must take values in "
+                "0, ..., 494."
+                .format(udslice)
+            )
+        # TODO: See if this can be simplified or at least clarified.
         slice_edge = [edge.FR, edge.FL, edge.BL, edge.BR]
-        other_edge = [edge.UR, edge.UF, edge.UL,
-                      edge.UB, edge.DR, edge.DF, edge.DL, edge.DB]
+        other_edge = [
+            edge.UR, edge.UF, edge.UL, edge.UB,
+            edge.DR, edge.DF, edge.DL, edge.DB
+        ]
         # invalidate edges
         for i in range(12):
             self.ep[i] = edge.DB
@@ -275,11 +388,15 @@ class CubieCube:
                 self.ep[j] = other_edge[x]
                 x += 1
 
-    ########################   Phase 2 Coordinates   ########################
-
-    def get_edge4(self):
-        # coordinate describing permutation of the 4 edges FR, FL, BL, BR.
-        # takes values in range 0, ..., 23 (24 = 4! possibilities)
+    # ----------  Phase 2 Coordinates  ---------- #
+    @property
+    def edge4(self):
+        """
+        Compute edge4, the coordinate representing permutation of the 4 edges
+        FR, FL, BL, FR. This assumes that the cube is in phase 2 position, so
+        in particular the 4 edges are correctly placed, just perhaps not
+        correctly ordered. edge4 takes values in the range 0, ..., 4! - 1 = 23.
+        """
         edge4 = self.ep[8:]
         ret = 0
         for j in range(3, 0, -1):
@@ -290,9 +407,24 @@ class CubieCube:
             ret = j * (ret + s)
         return ret
 
-    def set_edge4(self, edge4):
-        # computes permutation of the 4 edges FR, FL, BL, BR from the coordinate edge4
-        # only valid in phase 2
+    @edge4.setter
+    def edge4(self, edge4):
+        """
+        Set the edge4 of the cube. Each of the values 0, ..., 4! - 1 determines
+        a distinct order of the 4 edges FR, FL, BL, BR in the middle slice
+        during phase 2.
+
+        Parameters
+        ----------
+        edge4 : int
+            Order of the 4 aforementioned edges encoded as edge4 coordinate.
+            Must satisfy 0 <= edge4 < 4!
+        """
+        if not 0 <= edge4 < 24:
+            raise ValueError(
+                "{} is out of range for edge4, must take values in 0, ..., 23"
+                .format(edge4)
+            )
         sliceedge = [edge.FR, edge.FL, edge.BL, edge.BR]
         coeffs = [0] * 3
         for i in range(1, 4):
@@ -304,24 +436,39 @@ class CubieCube:
         perm[0] = sliceedge[0]
         self.ep[8:] = perm[:]
 
-    def get_edge8(self):
-        # coordinate describing permutation of the 8 edge pieces UR, UF, UL, UB, DR, DF, DL, DB in the U and D faces
-        # only valid in phase 2
-        # permutation of the first 8 piece (valid only in phase 2)
-        # 0 <= ret < 8!
-        ret = 0
+    @property
+    def edge8(self):
+        """
+        Compute edge8, the coordinate representing permutation of the 8 edges
+        UR, UF, UL, UB, DR, DF, DL, DB. In phase 2 these edges will all be in
+        the U and D slices.
+
+        There are 8 possible positions for the 8 edges, so edge8 takes values
+        in the range 0, ..., 8! - 1.
+        """
+        edge8 = 0
         for j in range(7, 0, -1):
             s = 0
             for i in range(j):
                 if self.ep[i] > self.ep[j]:
                     s += 1
-            ret = j * (ret + s)
-        return ret
+            edge8 = j * (edge8 + s)
+        return edge8
 
-    def set_edge8(self, edge8):
-        # compute permutation of the 8 edge pieces UR, UF, UL, UB, DR, DF, DL, DB in the U and D faces
-        # only valid in phase 2
-        edges = range(8)
+    @edge8.setter
+    def edge8(self, edge8):
+        """
+        Set the edge8 of the cube. Each of the values 0, ..., 8! - 1 determines
+        a distinct order of the 8 edges UR, UF, UL, UB, DR, DF, DL, DB in the U
+        and D slices during phase 2.
+
+        Parameters
+        ----------
+        edge8 : int
+            Order of the 8 aforementioned edges encoded as edge8 coordinate.
+            Must satisfy 0 <= edge8 < 8!
+        """
+        edges = list(range(8))
         perm = [0] * 8
         coeffs = [0] * 7
         for i in range(1, 8):
@@ -332,20 +479,36 @@ class CubieCube:
         perm[0] = edges[0]
         self.ep[:8] = perm[:]
 
-    def get_corner(self):
-        # compute the corner permutation coordinate
-        # 0 <= ret < 8!
-        ret = 0
+    @property
+    def corner(self):
+        """
+        Compute corner, the coordinate representing permutation of the 8
+        corners.
+
+        There are 8 possible positions for the 8 corners, so corner takes
+        values in the range 0, ..., 8! - 1.
+        """
+        c = 0
         for j in range(7, 0, -1):
             s = 0
             for i in range(j):
                 if self.cp[i] > self.cp[j]:
                     s += 1
-            ret = j * (ret + s)
-        return ret
+            c = j * (c + s)
+        return c
 
-    def set_corner(self, idx):
-        # compute corner permutation from coordinate
+    @corner.setter
+    def corner(self, idx):
+        """
+        Set the corner of the cube. Each of the values 0, ..., 8! - 1
+        determines a distinct permutation of the 8 corners.
+
+        Parameters
+        ----------
+        corner : int
+            Order of the 8 corners encoded as corner coordinate. Must satisfy
+            0 <= corner < 8!
+        """
         corners = range(8)
         perm = [0] * 8
         coeffs = [0] * 7
@@ -357,44 +520,71 @@ class CubieCube:
         perm[0] = corners[0]
         self.cp = perm[:]
 
-    ################ Misc. Coordinates ################
+    # ---------- Misc. Coordinates ---------- #
 
-    # edge permutation coordinate not used in solving, but needed to generate random cubes
-    def get_edge(self):
-        # compute the edge permutation coordinate
-        # 0 <= ret < 12!
-        ret = 0
+    # edge permutation coordinate not used in solving,
+    # but needed to generate random cubes
+    @property
+    def edge(self):
+        """
+        Compute edge, the coordinate representing permutation of the 12
+        corners.
+
+        There are 12 possible positions for the 12 edges, so edge takes values
+        in the range 0, ..., 12! - 1.
+        """
+        e = 0
         for j in range(11, 0, -1):
             s = 0
             for i in range(j):
                 if self.ep[i] > self.ep[j]:
                     s += 1
-            ret = j * (ret + s)
-        return ret
+            e = j * (e + s)
+        return e
 
-    def set_edge(self, idx):
-        # compute edge permutation from coordinate
+    @edge.setter
+    def edge(self, edge):
+        """
+        Set the edge8 of the cube. Each of the values 0, ..., 8! - 1 determines
+        a distinct order of the 8 edges UR, UF, UL, UB, DR, DF, DL, DB in the U
+        and D slices during phase 2.
+
+        Parameters
+        ----------
+        edge8 : int
+            Order of the 8 aforementioned edges encoded as edge8 coordinate.
+            Must satisfy 0 <= edge8 < 8!
+        """
         edges = range(12)
         perm = [0] * 12
         coeffs = [0] * 11
         for i in range(1, 12):
-            coeffs[i - 1] = idx % (i + 1)
-            idx /= (i + 1)
+            coeffs[i - 1] = edge % (i + 1)
+            edge /= (i + 1)
         for i in range(10, -1, -1):
             perm[i + 1] = edges.pop(i + 1 - coeffs[i])
         perm[0] = edges[0]
         self.ep = perm[:]
 
-    ################ Solvability Check ################
+    # ----------  Solvability Check ---------- #
 
     # Check a cubiecube for solvability
-    # 0: Solvable
-    # -2: not all 12 edges exist exactly once
-    # -3: flip error: one edge should be flipped
-    # -4: not all corners exist exactly once
-    # -5: twist error - a corner must be twisted
-    # -6: Parity error - two corners or edges have to be exchanged
+    #
     def verify(self):
+        """
+        Check if current cube position is solvable.
+
+        Returns
+        -------
+        int:
+            Integer encoding solvability of cube.
+                0: Solvable
+                -2: not all 12 edges exist exactly once
+                -3: flip error: one edge should be flipped
+                -4: not all corners exist exactly once
+                -5: twist error - a corner must be twisted
+                -6: Parity error - two corners or edges have to be exchanged
+        """
         sum = 0
         edge_count = [0 for i in range(12)]
         for e in range(12):
@@ -424,27 +614,27 @@ class CubieCube:
 
 # we store the six possible clockwise 1/4 turn moves in the following array.
 MOVE_CUBE = [CubieCube() for i in range(6)]
-MOVE_CUBE[0].cp = cpU
-MOVE_CUBE[0].co = coU
-MOVE_CUBE[0].ep = epU
-MOVE_CUBE[0].eo = eoU
-MOVE_CUBE[1].cp = cpR
-MOVE_CUBE[1].co = coR
-MOVE_CUBE[1].ep = epR
-MOVE_CUBE[1].eo = eoR
-MOVE_CUBE[2].cp = cpF
-MOVE_CUBE[2].co = coF
-MOVE_CUBE[2].ep = epF
-MOVE_CUBE[2].eo = eoF
-MOVE_CUBE[3].cp = cpD
-MOVE_CUBE[3].co = coD
-MOVE_CUBE[3].ep = epD
-MOVE_CUBE[3].eo = eoD
-MOVE_CUBE[4].cp = cpL
-MOVE_CUBE[4].co = coL
-MOVE_CUBE[4].ep = epL
-MOVE_CUBE[4].eo = eoL
-MOVE_CUBE[5].cp = cpB
-MOVE_CUBE[5].co = coB
-MOVE_CUBE[5].ep = epB
-MOVE_CUBE[5].eo = eoB
+MOVE_CUBE[0].cp = _cpU
+MOVE_CUBE[0].co = _coU
+MOVE_CUBE[0].ep = _epU
+MOVE_CUBE[0].eo = _eoU
+MOVE_CUBE[1].cp = _cpR
+MOVE_CUBE[1].co = _coR
+MOVE_CUBE[1].ep = _epR
+MOVE_CUBE[1].eo = _eoR
+MOVE_CUBE[2].cp = _cpF
+MOVE_CUBE[2].co = _coF
+MOVE_CUBE[2].ep = _epF
+MOVE_CUBE[2].eo = _eoF
+MOVE_CUBE[3].cp = _cpD
+MOVE_CUBE[3].co = _coD
+MOVE_CUBE[3].ep = _epD
+MOVE_CUBE[3].eo = _eoD
+MOVE_CUBE[4].cp = _cpL
+MOVE_CUBE[4].co = _coL
+MOVE_CUBE[4].ep = _epL
+MOVE_CUBE[4].eo = _eoL
+MOVE_CUBE[5].cp = _cpB
+MOVE_CUBE[5].co = _coB
+MOVE_CUBE[5].ep = _epB
+MOVE_CUBE[5].eo = _eoB
