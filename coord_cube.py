@@ -33,12 +33,12 @@ class CoordCube:
             cls.load_tables()
         if isinstance(c, CubieCube):
             # initialise from cubiecube c
-            self.twist = c.get_twist()
-            self.flip = c.get_flip()
-            self.udslice = c.get_slice()
-            self.edge4 = c.get_edge4()
-            self.edge8 = c.get_edge8()
-            self.corner = c.get_corner()
+            self.twist = c.twist()
+            self.flip = c.flip()
+            self.udslice = c.udslice()
+            self.edge4 = c.edge4()
+            self.edge8 = c.edge8()
+            self.corner = c.corner()
         else:
             # initialise to clean cube
             self.twist = 0
@@ -49,7 +49,9 @@ class CoordCube:
             self.corner = 0
 
     def move(self, mv):
-        # update all coordinates
+        """
+        Update all coordinates after applying move mv using the move tables.
+        """
         cls = self.__class__
         self.twist = cls.tables['twist_move'][self.twist][mv]
         self.flip = cls.tables['flip_move'][self.flip][mv]
@@ -67,10 +69,10 @@ class CoordCube:
             'edge4_edge8_prun', 'edge4_corner_prun'
         )
         if os.path.isfile('tables.pkl'):
-            print("Tables detected, loading from disk")
+            print("Tables detected, loading from disk...")
             with open('tables.pkl', 'r') as f:
                 cls.tables = zip(table_names, pickle.load(f))
-            print("Success!")
+            print("Tables loaded successfully.")
         else:
             # ----------  Phase 1 move tables  ---------- #
             cls.tables['twist_move'] = cls.make_twist_table()
@@ -100,12 +102,12 @@ class CoordCube:
             cls.tables['edge4_edge8_prun'] = cls.make_edge4_edge8_prun()
             cls.tables['edge4_corner_prun'] = cls.make_edge4_corner_prun()
 
-            print("Saving tables to disk")
+            print("Saving tables to disk...")
             with open('tables.pkl', 'w') as f:
                 pickle.dump(
                     [cls.tables[table_name] for table_name in table_names], f
                 )
-            print("Success")
+            print("Tables saved successfully.")
         cls._tables_loaded = True
 
     @staticmethod
@@ -113,11 +115,11 @@ class CoordCube:
         twist_move = [[0] * MOVES for i in range(TWIST)]
         a = CubieCube()
         for i in range(TWIST):
-            a.set_twist(i)
+            a.twist = i
             for j in range(6):
                 for k in range(3):
                     a.corner_multiply(MOVE_CUBE[j])
-                    twist_move[i][3 * j + k] = a.get_twist()
+                    twist_move[i][3 * j + k] = a.twist()
                 a.corner_multiply(MOVE_CUBE[j])
         print("twist_move calculated")
         return twist_move
@@ -127,11 +129,11 @@ class CoordCube:
         flip_move = [[0] * MOVES for i in range(FLIP)]
         a = CubieCube()
         for i in range(FLIP):
-            a.set_flip(i)
+            a.flip = i
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
-                    flip_move[i][3 * j + k] = a.get_flip()
+                    flip_move[i][3 * j + k] = a.flip()
                 a.edge_multiply(MOVE_CUBE[j])
         print("flip_move calculated")
         return flip_move
@@ -141,11 +143,11 @@ class CoordCube:
         slice_move = [[0] * MOVES for i in range(UDSLICE)]
         a = CubieCube()
         for i in range(UDSLICE):
-            a.set_slice(i)
+            a.slice = i
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
-                    slice_move[i][3 * j + k] = a.get_slice()
+                    slice_move[i][3 * j + k] = a.udslice()
                 a.edge_multiply(MOVE_CUBE[j])
         print("slice_move calculated")
         return slice_move
@@ -155,14 +157,14 @@ class CoordCube:
         edge4_move = [[0] * MOVES for i in range(EDGE4)]
         a = CubieCube()
         for i in range(EDGE4):
-            a.set_edge4(i)
+            a.edge4 = i
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
                     if k % 2 == 0 and j % 3 != 0:
                         edge4_move[i][3 * j + k] = -1
                     else:
-                        edge4_move[i][3 * j + k] = a.get_edge4()
+                        edge4_move[i][3 * j + k] = a.edge4()
                 a.edge_multiply(MOVE_CUBE[j])
         print("edge4_move calculated")
         return edge4_move
@@ -172,14 +174,14 @@ class CoordCube:
         edge8_move = [[0] * MOVES for i in range(EDGE8)]
         a = CubieCube()
         for i in range(EDGE8):
-            a.set_edge8(i)
+            a.edge8 = i
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
                     if k % 2 == 0 and j % 3 != 0:
                         edge8_move[i][3 * j + k] = -1
                     else:
-                        edge8_move[i][3 * j + k] = a.get_edge8()
+                        edge8_move[i][3 * j + k] = a.edge8()
                 a.edge_multiply(MOVE_CUBE[j])
         print("edge8_move calculated")
         return edge8_move
@@ -189,14 +191,14 @@ class CoordCube:
         corner_move = [[0] * MOVES for i in range(CORNER)]
         a = CubieCube()
         for i in range(CORNER):
-            a.set_corner(i)
+            a.corner = i
             for j in range(6):
                 for k in range(3):
                     a.corner_multiply(MOVE_CUBE[j])
                     if k % 2 == 0 and j % 3 != 0:
                         corner_move[i][3 * j + k] = -1
                     else:
-                        corner_move[i][3 * j + k] = a.get_corner()
+                        corner_move[i][3 * j + k] = a.corner()
                 a.corner_multiply(MOVE_CUBE[j])
         print("corner_move calculated")
         return corner_move
