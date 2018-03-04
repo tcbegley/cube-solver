@@ -1,7 +1,6 @@
 import color
-import facelet
 import cubie_cube
-
+import facelet
 
 # Maps corner positions to facelet positions
 corner_facelet = (
@@ -50,17 +49,18 @@ class FaceCube:
         """
         self.f = [0] * 54
         for i in range(54):
-            self.f[i] = color.c.index(cube_string[i])
+            self.f[i] = color.COLORS(cube_string[i])
 
-    # Convert facecube to cubestring
     def to_string(self):
-        return ''.join(color.c[i] for i in self.f)
+        """Convert facecube to cubestring"""
+        return ''.join(color.COLORS[i] for i in self.f)
 
-    # Convert FaceCube to CubieCube
     def to_cubiecube(self):
-        ret = cubie_cube.CubieCube()
+        """Convert FaceCube to CubieCube"""
+        cc = cubie_cube.CubieCube()
         for i in range(8):
-            # all corner names start with U or D, we isolate this colour here
+            # all corner names start with U or D, allowing us to find
+            # orientation of any given corner as follows
             for ori in range(3):
                 if self.f[corner_facelet[i][ori]] in [color.U, color.D]:
                     break
@@ -69,20 +69,20 @@ class FaceCube:
             for j in range(8):
                 if (color1 == corner_color[j][1] and
                         color2 == corner_color[j][2]):
-                    ret.cp[i] = j
-                    ret.co[i] = ori
+                    cc.cp[i] = j
+                    cc.co[i] = ori
                     break
 
         for i in range(12):
             for j in range(12):
                 if (self.f[edge_facelet[i][0]] == edge_color[j][0] and
                         self.f[edge_facelet[i][1]] == edge_color[j][1]):
-                    ret.ep[i] = j
-                    ret.eo[i] = 0
+                    cc.ep[i] = j
+                    cc.eo[i] = 0
                     break
                 if (self.f[edge_facelet[i][0]] == edge_color[j][1] and
                         self.f[edge_facelet[i][1]] == edge_color[j][0]):
-                    ret.ep[i] = j
-                    ret.eo[i] = 1
+                    cc.ep[i] = j
+                    cc.eo[i] = 1
                     break
-        return ret
+        return cc
