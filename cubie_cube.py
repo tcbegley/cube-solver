@@ -96,13 +96,13 @@ _eoB = (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1)
 
 class CubieCube:
     def __init__(self, cp=None, co=None, ep=None, eo=None):
-        # Initialise clean cube if position not given.
         if cp and co and ep and eo:
             self.cp = cp[:]
             self.co = co[:]
             self.ep = ep[:]
             self.eo = eo[:]
         else:
+            # Initialise clean cube if position not given.
             self.cp = [corner.URF, corner.UFL, corner.ULB, corner.UBR,
                        corner.DFR, corner.DLF, corner.DBL, corner.DRB]
             self.co = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -326,37 +326,37 @@ class CubieCube:
         self.eo[11] = (-sum) % 2
 
     @property
-    def slice(self):
+    def udslice(self):
         """
-        Compute slice, the coordinate representing position, but not the order,
-        of the 4 edges FR, FL, BL, BR. These 4 edges must be in the middle
-        layer for phase 2 to begin. If they are in the middle layer, slice will
-        have the value 0.
+        Compute udslice, the coordinate representing position, but not the
+        order, of the 4 edges FR, FL, BL, BR. These 4 edges must be in the
+        middle layer for phase 2 to begin. If they are in the middle layer,
+        udslice will have the value 0.
 
         Since there are 12 possible positions and we care only about those 4
-        edges, slice takes values in the range 0, ..., 12C4 - 1.
+        edges, udslice takes values in the range 0, ..., 12C4 - 1.
         """
         # TODO: See if this can be streamlined or made more intuitive.
-        ret, s = 0, 0
+        udslice, s = 0, 0
         for j in range(12):
             if 8 <= self.ep[j] < 12:
                 s += 1
             elif s >= 1:
-                ret += choose(j, s - 1)
-        return ret
+                udslice += choose(j, s - 1)
+        return udslice
 
-    @slice.setter
-    def slice(self, udslice):
+    @udslice.setter
+    def udslice(self, udslice):
         """
-        Set the slice of the cube. Each of the values 0, ..., 12C4 - 1
+        Set the udslice of the cube. Each of the values 0, ..., 12C4 - 1
         determines a distinct set of 4 positions for the edges FR, FL, BL, BR
         to occupy. Note that it does not determine the order of these edges.
 
         Parameters
         ----------
         udslice : int
-            Position of the 4 aforementioned edges encoded as slice coordinate.
-            Must satisfy 0 <= slice < 12C4.
+            Position of the 4 aforementioned edges encoded as udslice
+            coordinate. Must satisfy 0 <= slice < 12C4.
         """
         if not 0 <= udslice < choose(12, 4):
             raise ValueError(
@@ -365,7 +365,7 @@ class CubieCube:
                 .format(udslice)
             )
         # TODO: See if this can be simplified or at least clarified.
-        slice_edge = [edge.FR, edge.FL, edge.BL, edge.BR]
+        udslice_edge = [edge.FR, edge.FL, edge.BL, edge.BR]
         other_edge = [
             edge.UR, edge.UF, edge.UL, edge.UB,
             edge.DR, edge.DF, edge.DL, edge.DB
@@ -377,7 +377,7 @@ class CubieCube:
         s = 3
         for j in range(11, -1, -1):
             if udslice - choose(j, s) < 0:
-                self.ep[j] = slice_edge[s]
+                self.ep[j] = udslice_edge[s]
                 s -= 1
             else:
                 udslice -= choose(j, s)
