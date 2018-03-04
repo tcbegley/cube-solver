@@ -322,7 +322,7 @@ class CubieCube:
             x = flip % 2
             self.eo[10 - i] = x
             sum += x
-            flip /= 2
+            flip //= 2
         self.eo[11] = (-sum) % 2
 
     @property
@@ -429,7 +429,7 @@ class CubieCube:
         coeffs = [0] * 3
         for i in range(1, 4):
             coeffs[i - 1] = edge4 % (i + 1)
-            edge4 /= (i + 1)
+            edge4 //= (i + 1)
         perm = [0] * 4
         for i in range(2, -1, -1):
             perm[i + 1] = sliceedge.pop(i + 1 - coeffs[i])
@@ -473,7 +473,7 @@ class CubieCube:
         coeffs = [0] * 7
         for i in range(1, 8):
             coeffs[i - 1] = edge8 % (i + 1)
-            edge8 /= (i + 1)
+            edge8 //= (i + 1)
         for i in range(6, -1, -1):
             perm[i + 1] = edges.pop(i + 1 - coeffs[i])
         perm[0] = edges[0]
@@ -498,7 +498,7 @@ class CubieCube:
         return c
 
     @corner.setter
-    def corner(self, idx):
+    def corner(self, corn):
         """
         Set the corner of the cube. Each of the values 0, ..., 8! - 1
         determines a distinct permutation of the 8 corners.
@@ -513,8 +513,8 @@ class CubieCube:
         perm = [0] * 8
         coeffs = [0] * 7
         for i in range(1, 8):
-            coeffs[i - 1] = idx % (i + 1)
-            idx /= (i + 1)
+            coeffs[i - 1] = corn % (i + 1)
+            corn //= (i + 1)
         for i in range(6, -1, -1):
             perm[i + 1] = corners.pop(i + 1 - coeffs[i])
         perm[0] = corners[0]
@@ -560,7 +560,7 @@ class CubieCube:
         coeffs = [0] * 11
         for i in range(1, 12):
             coeffs[i - 1] = edge % (i + 1)
-            edge /= (i + 1)
+            edge //= (i + 1)
         for i in range(10, -1, -1):
             perm[i + 1] = edges.pop(i + 1 - coeffs[i])
         perm[0] = edges[0]
