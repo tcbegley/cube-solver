@@ -33,12 +33,12 @@ class CoordCube:
             cls.load_tables()
         if isinstance(c, CubieCube):
             # initialise from cubiecube c
-            self.twist = c.twist()
-            self.flip = c.flip()
-            self.udslice = c.udslice()
-            self.edge4 = c.edge4()
-            self.edge8 = c.edge8()
-            self.corner = c.corner()
+            self.twist = c.twist
+            self.flip = c.flip
+            self.udslice = c.udslice
+            self.edge4 = c.edge4
+            self.edge8 = c.edge8
+            self.corner = c.corner
         else:
             # initialise to clean cube
             self.twist = 0
