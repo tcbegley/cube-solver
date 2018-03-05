@@ -49,7 +49,7 @@ class FaceCube:
         """
         self.f = [0] * 54
         for i in range(54):
-            self.f[i] = color.COLORS(cube_string[i])
+            self.f[i] = color.COLORS[cube_string[i]]
 
     def to_string(self):
         """Convert facecube to cubestring"""
