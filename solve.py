@@ -2,9 +2,7 @@ import time
 
 import color
 import tools
-from coord_cube import (CORNER, EDGE8, FLIP, TWIST, CoordCube,
-                        edge4_corner_prun, edge4_edge8_prun, slice_flip_prun,
-                        slice_twist_prun)
+from coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
 from cubie_cube import CubieCube
 from face_cube import FaceCube
 
@@ -13,8 +11,7 @@ class Solver:
     def __init__(
         self,
         facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
-        max_length=25,
-        timeout=10
+        max_length=25
     ):
         # store facelet representation and max solution length
         self.facelets = facelets
@@ -45,9 +42,6 @@ class Solver:
         # used to exclude branches in the search tree.
         self.min_dist_1 = [0] * self.max_length
         self.min_dist_2 = [0] * self.max_length
-
-        # upper bound on time spent searching solution
-        self.timeout = timeout
 
         # initialise the arrays from the input
         self.f = FaceCube(facelets)
@@ -82,9 +76,11 @@ class Solver:
         Cost of current position for use in phase 1. Returns a lower bound on
         the number of moves requires to get to phase 2.
         """
+        slice_twist = self.udslice[n] * TWIST + self.twist[n]
+        slice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            slice_twist_prun[self.udslice[n] * TWIST + self.twist[n]],
-            slice_flip_prun[self.udslice[n] * FLIP + self.flip[n]]
+            CoordCube.slice_twist_prun[slice_twist],
+            CoordCube.slice_flip_prun[slice_flip]
         )
 
     def phase_2_cost(self, n):
@@ -92,22 +88,26 @@ class Solver:
         Cost of current position for use in phase 2. Returns a lower bound on
         the number of moves required to get to a solved cube.
         """
-        # lower bound for number of moves needed to get to solve cube.
+        edge4_corner = self.edge4[n] * CORNER + self.corner[n]
+        edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
         return max(
-            edge4_corner_prun[self.edge4[n] * CORNER + self.corner[n]],
-            edge4_edge8_prun[self.edge4[n] * EDGE8 + self.edge8[n]]
+            CoordCube.edge4_corner_prun[edge4_corner],
+            CoordCube.edge4_edge8_prun[edge4_edge8]
         )
 
     def solve(self, timeout=10):
-        # implements back to back IDA* searches to first get the cube to phase
-        # 2, then to a clean cube.
+        """
+        Solve the cube.
+
+        This method implements back to back IDA* searches for phase 1 and phase
+        2. Once the first solution has been found the algorithm checks for
+        shorter solutions, including checking whether there is a shorter
+        overall solution with a longer first phase.
+        """
         if tools.verify(self.facelets):
             return "Error: {}".format(tools.verify(self.facelets))
 
         self.timeout = timeout
-
-        # keep track of elapsed time so that we can force a timeout if
-        # necessary
         self.t_start = time.time()
 
         while time.time() - self.t_start <= self.timeout:
