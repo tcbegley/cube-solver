@@ -119,7 +119,7 @@ class CoordCube:
             for j in range(6):
                 for k in range(3):
                     a.corner_multiply(MOVE_CUBE[j])
-                    twist_move[i][3 * j + k] = a.twist()
+                    twist_move[i][3 * j + k] = a.twist
                 a.corner_multiply(MOVE_CUBE[j])
         print("twist_move calculated")
         return twist_move
@@ -133,7 +133,7 @@ class CoordCube:
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
-                    flip_move[i][3 * j + k] = a.flip()
+                    flip_move[i][3 * j + k] = a.flip
                 a.edge_multiply(MOVE_CUBE[j])
         print("flip_move calculated")
         return flip_move
@@ -147,7 +147,7 @@ class CoordCube:
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
-                    slice_move[i][3 * j + k] = a.udslice()
+                    slice_move[i][3 * j + k] = a.udslice
                 a.edge_multiply(MOVE_CUBE[j])
         print("slice_move calculated")
         return slice_move
@@ -164,7 +164,7 @@ class CoordCube:
                     if k % 2 == 0 and j % 3 != 0:
                         edge4_move[i][3 * j + k] = -1
                     else:
-                        edge4_move[i][3 * j + k] = a.edge4()
+                        edge4_move[i][3 * j + k] = a.edge4
                 a.edge_multiply(MOVE_CUBE[j])
         print("edge4_move calculated")
         return edge4_move
@@ -181,7 +181,7 @@ class CoordCube:
                     if k % 2 == 0 and j % 3 != 0:
                         edge8_move[i][3 * j + k] = -1
                     else:
-                        edge8_move[i][3 * j + k] = a.edge8()
+                        edge8_move[i][3 * j + k] = a.edge
                 a.edge_multiply(MOVE_CUBE[j])
         print("edge8_move calculated")
         return edge8_move
@@ -198,7 +198,7 @@ class CoordCube:
                     if k % 2 == 0 and j % 3 != 0:
                         corner_move[i][3 * j + k] = -1
                     else:
-                        corner_move[i][3 * j + k] = a.corner()
+                        corner_move[i][3 * j + k] = a.corner
                 a.corner_multiply(MOVE_CUBE[j])
         print("corner_move calculated")
         return corner_move
