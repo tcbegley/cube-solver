@@ -70,7 +70,7 @@ class CoordCube:
         )
         if os.path.isfile('tables.pkl'):
             print("Tables detected, loading from disk...")
-            with open('tables.pkl', 'r') as f:
+            with open('tables.pkl', 'rb') as f:
                 cls.tables = zip(table_names, pickle.load(f))
             print("Tables loaded successfully.")
         else:
@@ -103,7 +103,7 @@ class CoordCube:
             cls.tables['edge4_corner_prun'] = cls.make_edge4_corner_prun()
 
             print("Saving tables to disk...")
-            with open('tables.pkl', 'w') as f:
+            with open('tables.pkl', 'wb') as f:
                 pickle.dump(
                     [cls.tables[table_name] for table_name in table_names], f
                 )
@@ -143,7 +143,7 @@ class CoordCube:
         slice_move = [[0] * MOVES for i in range(UDSLICE)]
         a = CubieCube()
         for i in range(UDSLICE):
-            a.slice = i
+            a.udslice = i
             for j in range(6):
                 for k in range(3):
                     a.edge_multiply(MOVE_CUBE[j])
@@ -181,7 +181,7 @@ class CoordCube:
                     if k % 2 == 0 and j % 3 != 0:
                         edge8_move[i][3 * j + k] = -1
                     else:
-                        edge8_move[i][3 * j + k] = a.edge
+                        edge8_move[i][3 * j + k] = a.edge8
                 a.edge_multiply(MOVE_CUBE[j])
         print("edge8_move calculated")
         return edge8_move
@@ -226,7 +226,7 @@ class CoordCube:
 
     @classmethod
     def make_slice_flip_prun(cls):
-        slice_flip_prun = [-1] * (UDSLICE * TWIST)
+        slice_flip_prun = [-1] * (UDSLICE * FLIP)
         slice_flip_prun[0] = 0
         count, depth = 1, 0
         while count < UDSLICE * FLIP:
