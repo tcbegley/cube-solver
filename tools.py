@@ -11,7 +11,7 @@ def verify(s):
     count = [0]*6
     try:
         for char in s:
-            count[color.c.index(char)] += 1
+            count[color.COLORS[char]] += 1
     except (IndexError, ValueError):
         return -1
     for i in range(6):
