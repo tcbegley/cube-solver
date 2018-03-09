@@ -3,7 +3,7 @@ import time
 import color
 import tools
 from coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
-from cubie_cube import CubieCube
+from cubie_cube import CubieCube, MOVE_CUBE
 from face_cube import FaceCube
 
 
@@ -79,8 +79,8 @@ class Solver:
         slice_twist = self.udslice[n] * TWIST + self.twist[n]
         slice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            CoordCube.slice_twist_prun[slice_twist],
-            CoordCube.slice_flip_prun[slice_flip]
+            CoordCube.tables['slice_twist_prun'][slice_twist],
+            CoordCube.tables['slice_flip_prun'][slice_flip]
         )
 
     def phase_2_cost(self, n):
@@ -91,8 +91,8 @@ class Solver:
         edge4_corner = self.edge4[n] * CORNER + self.corner[n]
         edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
         return max(
-            CoordCube.edge4_corner_prun[edge4_corner],
-            CoordCube.edge4_edge8_prun[edge4_edge8]
+            CoordCube.tables['edge4_corner_prun'][edge4_corner],
+            CoordCube.tables['edge4_edge8_prun'][edge4_edge8]
         )
 
     def solve(self, timeout=10):
@@ -146,11 +146,18 @@ class Solver:
                     mv = 3 * i + j - 1
 
                     # update coordinates
-                    self.twist[n + 1] = CoordCube.twist_move[self.twist[n]][mv]
-                    self.flip[n + 1] = CoordCube.flip_move[self.flip[n]][mv]
-                    self.udslice[n +
-                                 1] = CoordCube.slice_move[self.udslice[n]][mv]
-                    self.min_dist_1[n + 1] = self.phase_1_cost(n + 1)
+                    self.twist[n+1] = (
+                        CoordCube.tables['twist_move'][self.twist[n]][mv]
+                    )
+                    self.flip[n+1] = (
+                        CoordCube.tables['flip_move'][self.flip[n]][mv]
+                    )
+                    self.udslice[n+1] = (
+                        CoordCube.tables['slice_move'][self.udslice[n]][mv]
+                    )
+                    self.min_dist_1[n+1] = (
+                        self.phase_1_cost(n+1)
+                    )
 
                     # start search from next node
                     m = self.phase_1_search(n + 1, depth - 1)
@@ -170,10 +177,10 @@ class Solver:
         cc = self.f.to_cubiecube()
         for i in range(n):
             for j in range(self.power[i]):
-                cc.multiply(CubieCube.move_cube[self.axis[i]])
-        self.edge4[n] = cc.get_edge4()
-        self.edge8[n] = cc.get_edge8()
-        self.corner[n] = cc.get_corner()
+                cc.multiply(MOVE_CUBE[self.axis[i]])
+        self.edge4[n] = cc.edge4
+        self.edge8[n] = cc.edge8
+        self.corner[n] = cc.corner
         self.min_dist_2[n] = self.phase_2_cost(n)
         for depth in range(self.max_length - n):
             # print("Phase 2: Searching at depth " + repr(depth))
@@ -201,17 +208,22 @@ class Solver:
                         continue
                     self.axis[n] = i
                     self.power[n] = j
-                    mv = 3 * i + j - 1
+                    mv = 3*i + j - 1
 
                     # update coordinates following the move mv
-                    self.edge4[n + 1] = CoordCube.edge4_move[self.edge4[n]][mv]
-                    self.edge8[n + 1] = CoordCube.edge8_move[self.edge8[n]][mv]
-                    self.corner[n +
-                                1] = CoordCube.corner_move[self.corner[n]][mv]
-                    self.min_dist_2[n + 1] = self.phase_2_cost(n + 1)
+                    self.edge4[n+1] = (
+                        CoordCube.tables['edge4_move'][self.edge4[n]][mv]
+                    )
+                    self.edge8[n+1] = (
+                        CoordCube.tables['edge8_move'][self.edge8[n]][mv]
+                    )
+                    self.corner[n+1] = (
+                        CoordCube.tables['corner_move'][self.corner[n]][mv]
+                    )
+                    self.min_dist_2[n+1] = self.phase_2_cost(n+1)
 
                     # start search from new node
-                    m = self.phase_2_search(n + 1, depth - 1)
+                    m = self.phase_2_search(n+1, depth-1)
                     if m >= 0:
                         return m
         # if no moves lead to a tree with a solution or min_dist_2 > depth then
