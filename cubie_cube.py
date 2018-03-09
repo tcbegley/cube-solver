@@ -607,7 +607,7 @@ class CubieCube:
             total += self.co[i]
         if total % 3 != 0:
             return -5
-        if self.edge_parity() != self.corner_parity():
+        if self.edge_parity != self.corner_parity:
             return -6
         return 0
 
