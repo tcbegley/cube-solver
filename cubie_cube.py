@@ -275,13 +275,13 @@ class CubieCube:
                 "0, ..., 2186."
                 .format(twist)
             )
-        sum = 0
+        total = 0
         for i in range(7):
             x = twist % 3
             self.co[6 - i] = x
-            sum += x
+            total += x
             twist //= 3
-        self.co[7] = (-sum) % 3
+        self.co[7] = (-total) % 3
 
     @property
     def flip(self):
@@ -317,13 +317,13 @@ class CubieCube:
                 "0, ..., 2047."
                 .format(flip)
             )
-        sum = 0
+        total = 0
         for i in range(11):
             x = flip % 2
             self.eo[10 - i] = x
-            sum += x
+            total += x
             flip //= 2
-        self.eo[11] = (-sum) % 2
+        self.eo[11] = (-total) % 2
 
     @property
     def udslice(self):
@@ -509,7 +509,7 @@ class CubieCube:
             Order of the 8 corners encoded as corner coordinate. Must satisfy
             0 <= corner < 8!
         """
-        corners = range(8)
+        corners = list(range(8))
         perm = [0] * 8
         coeffs = [0] * 7
         for i in range(1, 8):
@@ -585,7 +585,7 @@ class CubieCube:
                 -5: twist error - a corner must be twisted
                 -6: Parity error - two corners or edges have to be exchanged
         """
-        sum = 0
+        total = 0
         edge_count = [0 for i in range(12)]
         for e in range(12):
             edge_count[self.ep[e]] += 1
@@ -593,8 +593,8 @@ class CubieCube:
             if edge_count[i] != 1:
                 return -2
         for i in range(12):
-            sum += self.eo[i]
-        if sum % 2 != 0:
+            total += self.eo[i]
+        if total % 2 != 0:
             return -3
         corner_count = [0] * 8
         for c in range(8):
@@ -602,10 +602,10 @@ class CubieCube:
         for i in range(8):
             if corner_count[i] != 1:
                 return -4
-        sum = 0
+        total = 0
         for i in range(8):
-            sum += self.co[i]
-        if sum % 3 != 0:
+            total += self.co[i]
+        if total % 3 != 0:
             return -5
         if self.edge_parity() != self.corner_parity():
             return -6
@@ -614,26 +614,32 @@ class CubieCube:
 
 # we store the six possible clockwise 1/4 turn moves in the following array.
 MOVE_CUBE = [CubieCube() for i in range(6)]
+
 MOVE_CUBE[0].cp = _cpU
 MOVE_CUBE[0].co = _coU
 MOVE_CUBE[0].ep = _epU
 MOVE_CUBE[0].eo = _eoU
+
 MOVE_CUBE[1].cp = _cpR
 MOVE_CUBE[1].co = _coR
 MOVE_CUBE[1].ep = _epR
 MOVE_CUBE[1].eo = _eoR
+
 MOVE_CUBE[2].cp = _cpF
 MOVE_CUBE[2].co = _coF
 MOVE_CUBE[2].ep = _epF
 MOVE_CUBE[2].eo = _eoF
+
 MOVE_CUBE[3].cp = _cpD
 MOVE_CUBE[3].co = _coD
 MOVE_CUBE[3].ep = _epD
 MOVE_CUBE[3].eo = _eoD
+
 MOVE_CUBE[4].cp = _cpL
 MOVE_CUBE[4].co = _coL
 MOVE_CUBE[4].ep = _epL
 MOVE_CUBE[4].eo = _eoL
+
 MOVE_CUBE[5].cp = _cpB
 MOVE_CUBE[5].co = _coB
 MOVE_CUBE[5].ep = _epB
