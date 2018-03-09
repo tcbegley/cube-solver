@@ -3,7 +3,7 @@ import time
 import color
 import tools
 from coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
-from cubie_cube import CubieCube, MOVE_CUBE
+from cubie_cube import MOVE_CUBE
 from face_cube import FaceCube
 
 
