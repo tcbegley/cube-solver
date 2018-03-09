@@ -71,7 +71,7 @@ class CoordCube:
         if os.path.isfile('tables.pkl'):
             print("Tables detected, loading from disk...")
             with open('tables.pkl', 'rb') as f:
-                cls.tables = zip(table_names, pickle.load(f))
+                cls.tables = dict(zip(table_names, pickle.load(f)))
             print("Tables loaded successfully.")
         else:
             # ----------  Phase 1 move tables  ---------- #
