@@ -336,13 +336,12 @@ class CubieCube:
         Since there are 12 possible positions and we care only about those 4
         edges, udslice takes values in the range 0, ..., 12C4 - 1.
         """
-        # TODO: See if this can be streamlined or made more intuitive.
-        udslice, s = 0, 0
+        udslice, seen = 0, 0
         for j in range(12):
             if 8 <= self.ep[j] < 12:
-                s += 1
-            elif s >= 1:
-                udslice += choose(j, s - 1)
+                seen += 1
+            elif seen >= 1:
+                udslice += choose(j, seen-1)
         return udslice
 
     @udslice.setter
@@ -364,7 +363,6 @@ class CubieCube:
                 "0, ..., 494."
                 .format(udslice)
             )
-        # TODO: See if this can be simplified or at least clarified.
         udslice_edge = [edge.FR, edge.FL, edge.BL, edge.BR]
         other_edge = [
             edge.UR, edge.UF, edge.UL, edge.UB,
@@ -374,13 +372,13 @@ class CubieCube:
         for i in range(12):
             self.ep[i] = edge.DB
         # we first position the slice edges
-        s = 3
+        seen = 3
         for j in range(11, -1, -1):
-            if udslice - choose(j, s) < 0:
-                self.ep[j] = udslice_edge[s]
-                s -= 1
+            if udslice - choose(j, seen) < 0:
+                self.ep[j] = udslice_edge[seen]
+                seen -= 1
             else:
-                udslice -= choose(j, s)
+                udslice -= choose(j, seen)
         # then the remaining edges
         x = 0
         for j in range(12):
