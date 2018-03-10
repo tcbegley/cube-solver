@@ -10,13 +10,12 @@ from face_cube import FaceCube
 class Solver:
     def __init__(
         self,
-        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
         max_length=25
     ):
-        # store facelet representation and max solution length
-        self.facelets = facelets
+        # store max solution length
         self.max_length = max_length
 
+    def _reset(self):
         # the lists 'axis' and 'power' will store the nth move (index of face
         # being turned stored in axis, number of clockwise quarter turns stored
         # in power). The nth move is stored in position n-1
@@ -43,17 +42,6 @@ class Solver:
         self.min_dist_1 = [0] * self.max_length
         self.min_dist_2 = [0] * self.max_length
 
-        # initialise the arrays from the input
-        self.f = FaceCube(facelets)
-        self.c = CoordCube(self.f.to_cubiecube())
-        self.twist[0] = self.c.twist
-        self.flip[0] = self.c.flip
-        self.udslice[0] = self.c.udslice
-        self.corner[0] = self.c.corner
-        self.edge4[0] = self.c.edge4
-        self.edge8[0] = self.c.edge8
-        self.min_dist_1[0] = self.phase_1_cost(0)
-
     def solution_to_string(self, length):
         """
         Generate solution string. Uses standard cube notation: F means
@@ -79,8 +67,8 @@ class Solver:
         slice_twist = self.udslice[n] * TWIST + self.twist[n]
         slice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            CoordCube.tables['slice_twist_prun'][slice_twist],
-            CoordCube.tables['slice_flip_prun'][slice_flip]
+            CoordCube.tables['udslice_twist_prune'][slice_twist],
+            CoordCube.tables['udslice_flip_prune'][slice_flip]
         )
 
     def phase_2_cost(self, n):
@@ -91,11 +79,15 @@ class Solver:
         edge4_corner = self.edge4[n] * CORNER + self.corner[n]
         edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
         return max(
-            CoordCube.tables['edge4_corner_prun'][edge4_corner],
-            CoordCube.tables['edge4_edge8_prun'][edge4_edge8]
+            CoordCube.tables['edge4_corner_prune'][edge4_corner],
+            CoordCube.tables['edge4_edge8_prune'][edge4_edge8]
         )
 
-    def solve(self, timeout=10):
+    def solve(
+        self,
+        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+        timeout=10
+    ):
         """
         Solve the cube.
 
@@ -104,38 +96,50 @@ class Solver:
         shorter solutions, including checking whether there is a shorter
         overall solution with a longer first phase.
         """
+        self._reset()
+
+        self.facelets = facelets
         if tools.verify(self.facelets):
             return "Error: {}".format(tools.verify(self.facelets))
 
+        # initialise the arrays from the input
+        self.f = FaceCube(facelets)
+        self.c = CoordCube(self.f.to_cubiecube())
+        self.twist[0] = self.c.twist
+        self.flip[0] = self.c.flip
+        self.udslice[0] = self.c.udslice
+        self.corner[0] = self.c.corner
+        self.edge4[0] = self.c.edge4
+        self.edge8[0] = self.c.edge8
+        self.min_dist_1[0] = self.phase_1_cost(0)
+
         self.timeout = timeout
         self.t_start = time.time()
+        self._n = self.max_length
 
         while time.time() - self.t_start <= self.timeout:
             solution_found = False
-            for depth in range(self.max_length):
+            for depth in range(self._n):
                 n = self.phase_1_search(0, depth)
                 if n >= 0:
                     solution_found = True
                     print(self.solution_to_string(n))
-                    self.max_length = n - 1
+                    self._n = n - 1
                     break
                 if n == -2:
-                    return "Error: Timeout"
+                    return "Reached time limit, ending search."
             if not solution_found:
                 return "No shorter solution found."
         return "Error: Timeout"
 
     def phase_1_search(self, n, depth):
         if time.time() - self.t_start > self.timeout:
-            # Timeout
             return -2
         if self.min_dist_1[n] == 0:
-            # print("Finished phase 1! Starting phase 2.")
             return self.phase_2_start(n)
         elif self.min_dist_1[n] <= depth:
             for i in range(6):
-                if (n > 0 and
-                        (self.axis[n - 1] == i or self.axis[n - 1] == i + 3)):
+                if n > 0 and self.axis[n - 1] in (i, i+3):
                     # don't turn the same face on consecutive moves
                     # also for opposite faces, e.g. U and D, UD = DU, so we can
                     # assume that the lower index happens first.
@@ -153,7 +157,7 @@ class Solver:
                         CoordCube.tables['flip_move'][self.flip[n]][mv]
                     )
                     self.udslice[n+1] = (
-                        CoordCube.tables['slice_move'][self.udslice[n]][mv]
+                        CoordCube.tables['udslice_move'][self.udslice[n]][mv]
                     )
                     self.min_dist_1[n+1] = (
                         self.phase_1_cost(n+1)
@@ -182,24 +186,20 @@ class Solver:
         self.edge8[n] = cc.edge8
         self.corner[n] = cc.corner
         self.min_dist_2[n] = self.phase_2_cost(n)
-        for depth in range(self.max_length - n):
+        for depth in range(self._n - n):
             # print("Phase 2: Searching at depth " + repr(depth))
             m = self.phase_2_search(n, depth)
             if m >= 0:
                 return m
-        # print("Phase 2: I didn't find anything...")
         return -1
 
     def phase_2_search(self, n, depth):
-        # print("Phase 2 search: n = " + repr(n) + ", depth = " + repr(depth))
         if self.min_dist_2[n] == 0:
             print("Solution found!")
             return n
         elif self.min_dist_2[n] <= depth:
             for i in range(6):
-                if (n > 0 and
-                        (self.axis[n - 1] == i or self.axis[n - 1] == i + 3)):
-                    # don't repeat face turns
+                if n > 0 and self.axis[n - 1] in (i, i+3):
                     continue
                 for j in range(1, 4):
                     if i in [1, 2, 4, 5] and j != 2:
