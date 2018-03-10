@@ -1,9 +1,8 @@
 """
 Class that represents cube on the coordinate level and constructs move tables.
 """
-
+import json
 import os
-import pickle
 
 from cubie_cube import MOVE_CUBE, CubieCube
 
@@ -62,16 +61,10 @@ class CoordCube:
 
     @classmethod
     def load_tables(cls):
-        table_names = (
-            'twist_move', 'flip_move', 'slice_move',
-            'edge4_move', 'edge8_move', 'corner_move',
-            'slice_twist_prun', 'slice_flip_prun',
-            'edge4_edge8_prun', 'edge4_corner_prun'
-        )
         if os.path.isfile('tables.pkl'):
             print("Tables detected, loading from disk...")
-            with open('tables.pkl', 'rb') as f:
-                cls.tables = dict(zip(table_names, pickle.load(f)))
+            with open('tables.json', 'r') as f:
+                cls.tables = json.load(f)
             print("Tables loaded successfully.")
         else:
             # ----------  Phase 1 move tables  ---------- #
@@ -103,10 +96,8 @@ class CoordCube:
             cls.tables['edge4_corner_prun'] = cls.make_edge4_corner_prun()
 
             print("Saving tables to disk...")
-            with open('tables.pkl', 'wb') as f:
-                pickle.dump(
-                    [cls.tables[table_name] for table_name in table_names], f
-                )
+            with open('tables.json', 'w') as f:
+                json.dump(cls.tables, f)
             print("Tables saved successfully.")
         cls._tables_loaded = True
 
