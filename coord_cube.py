@@ -61,7 +61,7 @@ class CoordCube:
 
     @classmethod
     def load_tables(cls):
-        if os.path.isfile('tables.pkl'):
+        if os.path.isfile('tables.json'):
             print("Tables detected, loading from disk...")
             with open('tables.json', 'r') as f:
                 cls.tables = json.load(f)
