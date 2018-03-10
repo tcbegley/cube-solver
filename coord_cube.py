@@ -212,7 +212,7 @@ class CoordCube:
                             count += 1
                             udslice_twist_prune[x] = depth + 1
             depth += 1
-        print("slice_twist_prun calculated")
+        print("udslice_twist_prune calculated")
         return udslice_twist_prune
 
     @classmethod
