@@ -3,4 +3,5 @@
 
 # move and pruning tables
 tables.json
-tables.pkl    # legacy, code no longer generates this
+# legacy, code no longer generates this
+tables.pkl
