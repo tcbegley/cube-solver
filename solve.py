@@ -8,14 +8,10 @@ from face_cube import FaceCube
 
 
 class Solver:
-    def __init__(
-        self,
-        max_length=25
-    ):
-        # store max solution length
+    def __init__(self, max_length=25):
         self.max_length = max_length
 
-    def _reset(self):
+    def _phase_1_initialise(self):
         # the lists 'axis' and 'power' will store the nth move (index of face
         # being turned stored in axis, number of clockwise quarter turns stored
         # in power). The nth move is stored in position n-1
@@ -42,36 +38,49 @@ class Solver:
         self.min_dist_1 = [0] * self.max_length
         self.min_dist_2 = [0] * self.max_length
 
-    def solution_to_string(self, length):
-        """
-        Generate solution string. Uses standard cube notation: F means
-        clockwise quarter turn of the F face, U' means a counter clockwise
-        quarter turn of the U face, R2 means a half turn of the R face etc.
-        """
-        s = ""
-        for i in range(length):
-            s += color.COLORS[self.axis[i]]
-            if self.power[i] == 1:
-                s += " "
-            elif self.power[i] == 2:
-                s += "2 "
-            elif self.power[i] == 3:
-                s += "' "
-        return s
+        # initialise the arrays from the input
+        self.f = FaceCube(self.facelets)
+        self.c = CoordCube(self.f.to_cubiecube())
+        self.twist[0] = self.c.twist
+        self.flip[0] = self.c.flip
+        self.udslice[0] = self.c.udslice
+        self.corner[0] = self.c.corner
+        self.edge4[0] = self.c.edge4
+        self.edge8[0] = self.c.edge8
+        self.min_dist_1[0] = self.phase_1_cost(0)
 
-    def phase_1_cost(self, n):
+    def _phase_2_initialise(self, n):
+        if time.time() - self.t_start > self.timeout:
+            # Timeout
+            return -2
+        # initialise phase 2 search from the phase 1 solution
+        cc = self.f.to_cubiecube()
+        for i in range(n):
+            for j in range(self.power[i]):
+                cc.multiply(MOVE_CUBE[self.axis[i]])
+        self.edge4[n] = cc.edge4
+        self.edge8[n] = cc.edge8
+        self.corner[n] = cc.corner
+        self.min_dist_2[n] = self._phase_2_cost(n)
+        for depth in range(self._n - n):
+            m = self._phase_2_search(n, depth)
+            if m >= 0:
+                return m
+        return -1
+
+    def _phase_1_cost(self, n):
         """
         Cost of current position for use in phase 1. Returns a lower bound on
         the number of moves requires to get to phase 2.
         """
-        slice_twist = self.udslice[n] * TWIST + self.twist[n]
-        slice_flip = self.udslice[n] * FLIP + self.flip[n]
+        udslice_twist = self.udslice[n] * TWIST + self.twist[n]
+        udslice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            CoordCube.tables['udslice_twist_prune'][slice_twist],
-            CoordCube.tables['udslice_flip_prune'][slice_flip]
+            CoordCube.tables['udslice_twist_prune'][udslice_twist],
+            CoordCube.tables['udslice_flip_prune'][udslice_flip]
         )
 
-    def phase_2_cost(self, n):
+    def _phase_2_cost(self, n):
         """
         Cost of current position for use in phase 2. Returns a lower bound on
         the number of moves required to get to a solved cube.
@@ -83,60 +92,11 @@ class Solver:
             CoordCube.tables['edge4_edge8_prune'][edge4_edge8]
         )
 
-    def solve(
-        self,
-        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
-        timeout=10
-    ):
-        """
-        Solve the cube.
-
-        This method implements back to back IDA* searches for phase 1 and phase
-        2. Once the first solution has been found the algorithm checks for
-        shorter solutions, including checking whether there is a shorter
-        overall solution with a longer first phase.
-        """
-        self._reset()
-
-        self.facelets = facelets
-        if tools.verify(self.facelets):
-            return "Error: {}".format(tools.verify(self.facelets))
-
-        # initialise the arrays from the input
-        self.f = FaceCube(facelets)
-        self.c = CoordCube(self.f.to_cubiecube())
-        self.twist[0] = self.c.twist
-        self.flip[0] = self.c.flip
-        self.udslice[0] = self.c.udslice
-        self.corner[0] = self.c.corner
-        self.edge4[0] = self.c.edge4
-        self.edge8[0] = self.c.edge8
-        self.min_dist_1[0] = self.phase_1_cost(0)
-
-        self.timeout = timeout
-        self.t_start = time.time()
-        self._n = self.max_length
-
-        while time.time() - self.t_start <= self.timeout:
-            solution_found = False
-            for depth in range(self._n):
-                n = self.phase_1_search(0, depth)
-                if n >= 0:
-                    solution_found = True
-                    print(self.solution_to_string(n))
-                    self._n = n - 1
-                    break
-                if n == -2:
-                    return "Reached time limit, ending search."
-            if not solution_found:
-                return "No shorter solution found."
-        return "Error: Timeout"
-
-    def phase_1_search(self, n, depth):
+    def _phase_1_search(self, n, depth):
         if time.time() - self.t_start > self.timeout:
             return -2
         if self.min_dist_1[n] == 0:
-            return self.phase_2_start(n)
+            return self._phase_2_initialise(n)
         elif self.min_dist_1[n] <= depth:
             for i in range(6):
                 if n > 0 and self.axis[n - 1] in (i, i+3):
@@ -164,7 +124,7 @@ class Solver:
                     )
 
                     # start search from next node
-                    m = self.phase_1_search(n + 1, depth - 1)
+                    m = self._phase_1_search(n + 1, depth - 1)
                     if m >= 0:
                         return m
                     if m == -2:
@@ -173,27 +133,7 @@ class Solver:
         # if no solution found at current depth, return -1
         return -1
 
-    def phase_2_start(self, n):
-        if time.time() - self.t_start > self.timeout:
-            # Timeout
-            return -2
-        # initialise phase 2 search from the phase 1 solution
-        cc = self.f.to_cubiecube()
-        for i in range(n):
-            for j in range(self.power[i]):
-                cc.multiply(MOVE_CUBE[self.axis[i]])
-        self.edge4[n] = cc.edge4
-        self.edge8[n] = cc.edge8
-        self.corner[n] = cc.corner
-        self.min_dist_2[n] = self.phase_2_cost(n)
-        for depth in range(self._n - n):
-            # print("Phase 2: Searching at depth " + repr(depth))
-            m = self.phase_2_search(n, depth)
-            if m >= 0:
-                return m
-        return -1
-
-    def phase_2_search(self, n, depth):
+    def _phase_2_search(self, n, depth):
         if self.min_dist_2[n] == 0:
             print("Solution found!")
             return n
@@ -223,9 +163,65 @@ class Solver:
                     self.min_dist_2[n+1] = self.phase_2_cost(n+1)
 
                     # start search from new node
-                    m = self.phase_2_search(n+1, depth-1)
+                    m = self._phase_2_search(n+1, depth-1)
                     if m >= 0:
                         return m
         # if no moves lead to a tree with a solution or min_dist_2 > depth then
         # we return -1 to signify lack of solution
         return -1
+
+    def _solution_to_string(self, length):
+        """
+        Generate solution string. Uses standard cube notation: F means
+        clockwise quarter turn of the F face, U' means a counter clockwise
+        quarter turn of the U face, R2 means a half turn of the R face etc.
+        """
+        s = ""
+        for i in range(length):
+            s += color.COLORS[self.axis[i]]
+            if self.power[i] == 1:
+                s += " "
+            elif self.power[i] == 2:
+                s += "2 "
+            elif self.power[i] == 3:
+                s += "' "
+        return s
+
+    def solve(
+        self,
+        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+        timeout=10
+    ):
+        """
+        Solve the cube.
+
+        This method implements back to back IDA* searches for phase 1 and phase
+        2. Once the first solution has been found the algorithm checks for
+        shorter solutions, including checking whether there is a shorter
+        overall solution with a longer first phase.
+        """
+        self.facelets = facelets
+        if tools.verify(self.facelets):
+            return "Error: {}".format(tools.verify(self.facelets))
+
+        # prepare for phase 1
+        self._phase_1_initialise()
+
+        self.timeout = timeout
+        self.t_start = time.time()
+        self._n = self.max_length
+
+        while time.time() - self.t_start <= self.timeout:
+            solution_found = False
+            for depth in range(self._n):
+                n = self._phase_1_search(0, depth)
+                if n >= 0:
+                    solution_found = True
+                    print(self.solution_to_string(n))
+                    self._n = n - 1
+                    break
+                if n == -2:
+                    return "Reached time limit, ending search."
+            if not solution_found:
+                return "No shorter solution found."
+        return "Error: Timeout"
