@@ -47,11 +47,10 @@ class Solver:
         self.corner[0] = self.c.corner
         self.edge4[0] = self.c.edge4
         self.edge8[0] = self.c.edge8
-        self.min_dist_1[0] = self.phase_1_cost(0)
+        self.min_dist_1[0] = self._phase_1_cost(0)
 
     def _phase_2_initialise(self, n):
         if time.time() - self.t_start > self.timeout:
-            # Timeout
             return -2
         # initialise phase 2 search from the phase 1 solution
         cc = self.f.to_cubiecube()
@@ -62,7 +61,7 @@ class Solver:
         self.edge8[n] = cc.edge8
         self.corner[n] = cc.corner
         self.min_dist_2[n] = self._phase_2_cost(n)
-        for depth in range(self._n - n):
+        for depth in range(self._allowed_length-n):
             m = self._phase_2_search(n, depth)
             if m >= 0:
                 return m
@@ -95,7 +94,7 @@ class Solver:
     def _phase_1_search(self, n, depth):
         if time.time() - self.t_start > self.timeout:
             return -2
-        if self.min_dist_1[n] == 0:
+        elif self.min_dist_1[n] == 0:
             return self._phase_2_initialise(n)
         elif self.min_dist_1[n] <= depth:
             for i in range(6):
@@ -107,7 +106,7 @@ class Solver:
                 for j in range(1, 4):
                     self.axis[n] = i
                     self.power[n] = j
-                    mv = 3 * i + j - 1
+                    mv = 3*i + j - 1
 
                     # update coordinates
                     self.twist[n+1] = (
@@ -120,15 +119,14 @@ class Solver:
                         CoordCube.tables['udslice_move'][self.udslice[n]][mv]
                     )
                     self.min_dist_1[n+1] = (
-                        self.phase_1_cost(n+1)
+                        self._phase_1_cost(n+1)
                     )
 
                     # start search from next node
-                    m = self._phase_1_search(n + 1, depth - 1)
+                    m = self._phase_1_search(n+1, depth-1)
                     if m >= 0:
                         return m
                     if m == -2:
-                        # Timeout
                         return -2
         # if no solution found at current depth, return -1
         return -1
@@ -160,7 +158,7 @@ class Solver:
                     self.corner[n+1] = (
                         CoordCube.tables['corner_move'][self.corner[n]][mv]
                     )
-                    self.min_dist_2[n+1] = self.phase_2_cost(n+1)
+                    self.min_dist_2[n+1] = self._phase_2_cost(n+1)
 
                     # start search from new node
                     m = self._phase_2_search(n+1, depth-1)
@@ -199,29 +197,54 @@ class Solver:
         2. Once the first solution has been found the algorithm checks for
         shorter solutions, including checking whether there is a shorter
         overall solution with a longer first phase.
+
+        Parameters
+        ----------
+        facelets: str
+            Starting position of the cube. Should be a 54 character string
+            specifying the stickers on each face (in order U R F D L B),
+            reading row by row from the top left hand corner to the bottom
+            right.
+        timeout: int, optional
+            Limit the amount of time search is run for. Default is 10 seconds.
+            If max_length is left at the default value of 25, then a solution
+            will almost certainly be found almost instantly. However once a
+            solution has been found, the algorithm continues to search for
+            shorter solutions which takes longer as the search space is
+            constrained.
         """
-        self.facelets = facelets
-        if tools.verify(self.facelets):
-            return "Error: {}".format(tools.verify(self.facelets))
+        self.facelets = facelets.upper()
+        status = tools.verify(self.facelets)
+        if status:
+            error_message = {
+                -1: "each colour should appear exactly 9 times",
+                -2: "not all edges exist exactly once",
+                -3: "one edge should be flipped",
+                -4: "not all corners exist exactly once",
+                -5: "one corner should be twisted",
+                -6: "two corners or edges should be exchanged"
+            }
+            raise ValueError("Invalid cube: {}".format(error_message[status]))
 
         # prepare for phase 1
         self._phase_1_initialise()
 
         self.timeout = timeout
         self.t_start = time.time()
-        self._n = self.max_length
+        self._allowed_length = self.max_length
 
         while time.time() - self.t_start <= self.timeout:
             solution_found = False
-            for depth in range(self._n):
+            for depth in range(self._allowed_length):
                 n = self._phase_1_search(0, depth)
                 if n >= 0:
                     solution_found = True
-                    print(self.solution_to_string(n))
-                    self._n = n - 1
+                    print(self._solution_to_string(n))
+                    self._allowed_length = n - 1
                     break
                 if n == -2:
-                    return "Reached time limit, ending search."
+                    print("Reached time limit, ending search.")
+                    break
             if not solution_found:
-                return "No shorter solution found."
-        return "Error: Timeout"
+                print("No shorter solution found.")
+                break
