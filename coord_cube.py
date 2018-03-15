@@ -50,6 +50,14 @@ class CoordCube:
     def move(self, mv):
         """
         Update all coordinates after applying move mv using the move tables.
+
+        Parameters
+        ----------
+        mv : int
+            Integer representing one of 18 non-identity face turns. Calulate as
+            3 * i + j where i = 0, 1, 2, 3, 4, 5 for U, R, F, D, L, B
+            respectively, and j = 0, 1, 2 for quarter turn clockwise, half turn
+            and quarter turn anticlockwise respectively.
         """
         cls = self.__class__
         self.twist = cls.tables['twist_move'][self.twist][mv]
