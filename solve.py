@@ -98,7 +98,7 @@ class Solver:
             return self._phase_2_initialise(n)
         elif self.min_dist_1[n] <= depth:
             for i in range(6):
-                if n > 0 and self.axis[n - 1] in (i, i+3):
+                if n > 0 and self.axis[n-1] in (i, i+3):
                     # don't turn the same face on consecutive moves
                     # also for opposite faces, e.g. U and D, UD = DU, so we can
                     # assume that the lower index happens first.
