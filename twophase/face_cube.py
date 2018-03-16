@@ -1,6 +1,4 @@
-import color
-import cubie_cube
-import facelet
+from . import color, cubie_cube, facelet
 
 # Maps corner positions to facelet positions
 corner_facelet = (

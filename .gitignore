@@ -1,6 +1,8 @@
 # pycache
 *__pycache__*
 
+*.egg-info
+
 # move and pruning tables
 tables.json
 # legacy, code no longer generates this

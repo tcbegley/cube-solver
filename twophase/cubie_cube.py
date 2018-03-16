@@ -3,9 +3,7 @@ This class describes cubes on the level of the cubies.
 """
 from functools import reduce
 
-import corner
-import edge
-import face_cube
+from . import corner, edge, face_cube
 
 
 def choose(n, k):

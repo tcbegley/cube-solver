@@ -1,10 +1,7 @@
 # Module for helpful miscellaneous shizzle
 import random
 
-import color
-import coord_cube
-import cubie_cube
-import face_cube
+from . import color, coord_cube, cubie_cube, face_cube
 
 
 # Verify string input

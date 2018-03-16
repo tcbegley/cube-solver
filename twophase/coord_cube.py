@@ -4,7 +4,7 @@ Class that represents cube on the coordinate level and constructs move tables.
 import json
 import os
 
-from cubie_cube import MOVE_CUBE, CubieCube
+from .cubie_cube import MOVE_CUBE, CubieCube
 
 # 3^7 possible corner orientations
 TWIST = 2187
