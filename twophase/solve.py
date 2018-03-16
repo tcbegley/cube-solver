@@ -233,17 +233,21 @@ class Solver:
         self._allowed_length = self.max_length
 
         while time.time() - self.t_start <= self.timeout:
-            solution_found = False
+            solution_not_found = True
             for depth in range(self._allowed_length):
                 n = self._phase_1_search(0, depth)
                 if n >= 0:
-                    solution_found = True
+                    solution_not_found = False
                     print(self._solution_to_string(n))
                     self._allowed_length = n - 1
                     break
                 if n == -2:
+                    # this is a bit ugly, need a better way of ending the
+                    # search at timeout that doesn't misreport that the
+                    # shortest possible solution has been found.
+                    solution_not_found = False
                     print("Reached time limit, ending search.")
                     break
-            if not solution_found:
+            if solution_not_found:
                 print("No shorter solution found.")
                 break
