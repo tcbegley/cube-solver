@@ -8,6 +8,7 @@ Requires Python 3. Install with
 ```
 pip install git+https://github.com/tcbegley/cube-solver.git
 ```
+Note that depending on how your system is configured, you may need to replace `pip` with `pip3` in the above command to install for Python 3.
 
 ## Usage
 
@@ -29,7 +30,6 @@ Where the cube string is a 54 character string, consisting of the characters U, 
              |-U4--U5--U6-|
              |------------|
              |-U7--U8--U9-|
-             |------------|
 |------------|------------|------------|------------|
 |-L1--L2--L3-|-F1--F2--F3-|-R1--R2--R3-|-B1--B2--B3-|
 |------------|------------|------------|------------|
@@ -37,7 +37,6 @@ Where the cube string is a 54 character string, consisting of the characters U, 
 |------------|------------|------------|------------|
 |-L7--L8--L9-|-F7--F8--F9-|-R7--R8--R9-|-B7--B8--B9-|
 |------------|------------|------------|------------|
-             |------------|
              |-D1--D2--D3-|
              |------------|
              |-D4--D5--D6-|
@@ -48,6 +47,6 @@ Where the cube string is a 54 character string, consisting of the characters U, 
 
 and should be specified in the order U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9.
 
-For example, a completely solved cube is represented by the string `"UUUUUUUUURRRRRRRRRFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBB"`.
+For example, a completely solved cube is represented by the string `"UUUUUUUUURRRRRRRRRBBBBBBBBBDDDDDDDDDLLLLLLLLLBBBBBBBBB"`.
 
 Solve will search until the shortest solution has been found or timeout has been reached (default is 10 seconds). Typically it will find a solution instantly, and improve on it once or twice. I believe in principle it should eventually find an optimal solution, but usually times out before it can.
