@@ -6,7 +6,7 @@ from . import color, coord_cube, cubie_cube, face_cube
 
 # Verify string input
 def verify(s):
-    count = [0]*6
+    count = [0] * 6
     try:
         for char in s:
             count[color.COLORS[char]] += 1

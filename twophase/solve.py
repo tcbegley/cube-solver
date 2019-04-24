@@ -60,7 +60,7 @@ class Solver:
         self.edge8[n] = cc.edge8
         self.corner[n] = cc.corner
         self.min_dist_2[n] = self._phase_2_cost(n)
-        for depth in range(self._allowed_length-n):
+        for depth in range(self._allowed_length - n):
             m = self._phase_2_search(n, depth)
             if m >= 0:
                 return m
@@ -74,8 +74,8 @@ class Solver:
         udslice_twist = self.udslice[n] * TWIST + self.twist[n]
         udslice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            CoordCube.tables['udslice_twist_prune'][udslice_twist],
-            CoordCube.tables['udslice_flip_prune'][udslice_flip]
+            CoordCube.tables["udslice_twist_prune"][udslice_twist],
+            CoordCube.tables["udslice_flip_prune"][udslice_flip],
         )
 
     def _phase_2_cost(self, n):
@@ -86,8 +86,8 @@ class Solver:
         edge4_corner = self.edge4[n] * CORNER + self.corner[n]
         edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
         return max(
-            CoordCube.tables['edge4_corner_prune'][edge4_corner],
-            CoordCube.tables['edge4_edge8_prune'][edge4_edge8]
+            CoordCube.tables["edge4_corner_prune"][edge4_corner],
+            CoordCube.tables["edge4_edge8_prune"][edge4_edge8],
         )
 
     def _phase_1_search(self, n, depth):
@@ -97,7 +97,7 @@ class Solver:
             return self._phase_2_initialise(n)
         elif self.min_dist_1[n] <= depth:
             for i in range(6):
-                if n > 0 and self.axis[n-1] in (i, i+3):
+                if n > 0 and self.axis[n - 1] in (i, i + 3):
                     # don't turn the same face on consecutive moves
                     # also for opposite faces, e.g. U and D, UD = DU, so we can
                     # assume that the lower index happens first.
@@ -105,24 +105,22 @@ class Solver:
                 for j in range(1, 4):
                     self.axis[n] = i
                     self.power[n] = j
-                    mv = 3*i + j - 1
+                    mv = 3 * i + j - 1
 
                     # update coordinates
-                    self.twist[n+1] = (
-                        CoordCube.tables['twist_move'][self.twist[n]][mv]
-                    )
-                    self.flip[n+1] = (
-                        CoordCube.tables['flip_move'][self.flip[n]][mv]
-                    )
-                    self.udslice[n+1] = (
-                        CoordCube.tables['udslice_move'][self.udslice[n]][mv]
-                    )
-                    self.min_dist_1[n+1] = (
-                        self._phase_1_cost(n+1)
-                    )
+                    self.twist[n + 1] = CoordCube.tables["twist_move"][
+                        self.twist[n]
+                    ][mv]
+                    self.flip[n + 1] = CoordCube.tables["flip_move"][
+                        self.flip[n]
+                    ][mv]
+                    self.udslice[n + 1] = CoordCube.tables["udslice_move"][
+                        self.udslice[n]
+                    ][mv]
+                    self.min_dist_1[n + 1] = self._phase_1_cost(n + 1)
 
                     # start search from next node
-                    m = self._phase_1_search(n+1, depth-1)
+                    m = self._phase_1_search(n + 1, depth - 1)
                     if m >= 0:
                         return m
                     if m == -2:
@@ -136,7 +134,7 @@ class Solver:
             return n
         elif self.min_dist_2[n] <= depth:
             for i in range(6):
-                if n > 0 and self.axis[n - 1] in (i, i+3):
+                if n > 0 and self.axis[n - 1] in (i, i + 3):
                     continue
                 for j in range(1, 4):
                     if i in [1, 2, 4, 5] and j != 2:
@@ -145,22 +143,22 @@ class Solver:
                         continue
                     self.axis[n] = i
                     self.power[n] = j
-                    mv = 3*i + j - 1
+                    mv = 3 * i + j - 1
 
                     # update coordinates following the move mv
-                    self.edge4[n+1] = (
-                        CoordCube.tables['edge4_move'][self.edge4[n]][mv]
-                    )
-                    self.edge8[n+1] = (
-                        CoordCube.tables['edge8_move'][self.edge8[n]][mv]
-                    )
-                    self.corner[n+1] = (
-                        CoordCube.tables['corner_move'][self.corner[n]][mv]
-                    )
-                    self.min_dist_2[n+1] = self._phase_2_cost(n+1)
+                    self.edge4[n + 1] = CoordCube.tables["edge4_move"][
+                        self.edge4[n]
+                    ][mv]
+                    self.edge8[n + 1] = CoordCube.tables["edge8_move"][
+                        self.edge8[n]
+                    ][mv]
+                    self.corner[n + 1] = CoordCube.tables["corner_move"][
+                        self.corner[n]
+                    ][mv]
+                    self.min_dist_2[n + 1] = self._phase_2_cost(n + 1)
 
                     # start search from new node
-                    m = self._phase_2_search(n+1, depth-1)
+                    m = self._phase_2_search(n + 1, depth - 1)
                     if m >= 0:
                         return m
         # if no moves lead to a tree with a solution or min_dist_2 > depth then
@@ -187,7 +185,7 @@ class Solver:
     def solve(
         self,
         facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
-        timeout=10
+        timeout=10,
     ):
         """
         Solve the cube.
@@ -221,7 +219,7 @@ class Solver:
                 -3: "one edge should be flipped",
                 -4: "not all corners exist exactly once",
                 -5: "one corner should be twisted",
-                -6: "two corners or edges should be exchanged"
+                -6: "two corners or edges should be exchanged",
             }
             raise ValueError("Invalid cube: {}".format(error_message[status]))
 

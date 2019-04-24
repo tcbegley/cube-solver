@@ -6,8 +6,5 @@ pieces.
 URF, UFL, ULB, UBR, DFR, DLF, DBL, DRB = range(8)
 
 CORNERS = dict(
-    zip(
-        ("URF", "UFL", "ULB", "UBR", "DFR", "DLF", "DBL", "DRB"),
-        range(8)
-    )
+    zip(("URF", "UFL", "ULB", "UBR", "DFR", "DLF", "DBL", "DRB"), range(8))
 )
