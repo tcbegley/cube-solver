@@ -1,6 +1,6 @@
 import time
 
-from . import color, tools
+from . import color
 from .coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
 from .cubie_cube import MOVE_CUBE
 from .face_cube import FaceCube
@@ -39,7 +39,7 @@ class Solver:
             constrained.
         """
         self.facelets = facelets.upper()
-        status = tools.verify(self.facelets)
+        status = self.verify()
         if status:
             error_message = {
                 -1: "each colour should appear exactly 9 times",
@@ -77,6 +77,22 @@ class Solver:
             if solution_not_found:
                 print("No shorter solution found.")
                 break
+
+    def verify(self):
+        count = [0] * 6
+        try:
+            for char in self.facelets:
+                count[color.COLORS[char]] += 1
+        except (IndexError, ValueError):
+            return -1
+        for i in range(6):
+            if count[i] != 9:
+                return -1
+
+        fc = FaceCube(self.facelets)
+        cc = fc.to_cubiecube()
+
+        return cc.verify()
 
     def _phase_1_initialise(self):
         # the lists 'axis' and 'power' will store the nth move (index of face
