@@ -26,26 +26,34 @@ class CoordCube:
     _tables_loaded = False
     tables = {}
 
-    def __init__(self, c=None):
+    def __init__(self, twist=0, flip=0, udslice=0, edge4=0, edge8=0, corner=0):
         cls = self.__class__
         if not cls._tables_loaded:
             cls.load_tables()
-        if isinstance(c, CubieCube):
-            # initialise from cubiecube c
-            self.twist = c.twist
-            self.flip = c.flip
-            self.udslice = c.udslice
-            self.edge4 = c.edge4
-            self.edge8 = c.edge8
-            self.corner = c.corner
-        else:
-            # initialise to clean cube
-            self.twist = 0
-            self.flip = 0
-            self.udslice = 0
-            self.edge4 = 0
-            self.edge8 = 0
-            self.corner = 0
+
+        # initialise from cubiecube c
+        self.twist = twist
+        self.flip = flip
+        self.udslice = udslice
+        self.edge4 = edge4
+        self.edge8 = edge8
+        self.corner = corner
+
+    @classmethod
+    def from_cubiecube(cls, cube):
+        """
+        Create a CoordCube from an existing CubieCube.
+        """
+        if not isinstance(cube, CubieCube):
+            raise TypeError("Expected argument of type CubieCube")
+        return cls(
+            cube.twist,
+            cube.flip,
+            cube.udslice,
+            cube.edge4,
+            cube.edge8,
+            cube.corner,
+        )
 
     def move(self, mv):
         """

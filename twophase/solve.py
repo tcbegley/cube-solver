@@ -10,6 +10,74 @@ class Solver:
     def __init__(self, max_length=25):
         self.max_length = max_length
 
+    def solve(
+        self,
+        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+        timeout=10,
+    ):
+        """
+        Solve the cube.
+
+        This method implements back to back IDA* searches for phase 1 and phase
+        2. Once the first solution has been found the algorithm checks for
+        shorter solutions, including checking whether there is a shorter
+        overall solution with a longer first phase.
+
+        Parameters
+        ----------
+        facelets: str
+            Starting position of the cube. Should be a 54 character string
+            specifying the stickers on each face (in order U R F D L B),
+            reading row by row from the top left hand corner to the bottom
+            right.
+        timeout: int, optional
+            Limit the amount of time search is run for. Default is 10 seconds.
+            If max_length is left at the default value of 25, then a solution
+            will almost certainly be found almost instantly. However once a
+            solution has been found, the algorithm continues to search for
+            shorter solutions which takes longer as the search space is
+            constrained.
+        """
+        self.facelets = facelets.upper()
+        status = tools.verify(self.facelets)
+        if status:
+            error_message = {
+                -1: "each colour should appear exactly 9 times",
+                -2: "not all edges exist exactly once",
+                -3: "one edge should be flipped",
+                -4: "not all corners exist exactly once",
+                -5: "one corner should be twisted",
+                -6: "two corners or edges should be exchanged",
+            }
+            raise ValueError("Invalid cube: {}".format(error_message[status]))
+
+        # prepare for phase 1
+        self._phase_1_initialise()
+
+        self.timeout = timeout
+        self.t_start = time.time()
+        self._allowed_length = self.max_length
+
+        while time.time() - self.t_start <= self.timeout:
+            solution_not_found = True
+            for depth in range(self._allowed_length):
+                n = self._phase_1_search(0, depth)
+                if n >= 0:
+                    solution_not_found = False
+                    print(self._solution_to_string(n))
+                    self._allowed_length = n - 1
+                    break
+                if n == -2:
+                    # this is a bit ugly, need a better way of ending the
+                    # search at timeout that doesn't misreport that the
+                    # shortest possible solution has been found.
+                    solution_not_found = False
+                    print("Reached time limit, ending search.")
+                    break
+            if solution_not_found:
+                print("No shorter solution found.")
+                break
+
     def _phase_1_initialise(self):
         # the lists 'axis' and 'power' will store the nth move (index of face
         # being turned stored in axis, number of clockwise quarter turns stored
@@ -39,7 +107,7 @@ class Solver:
 
         # initialise the arrays from the input
         self.f = FaceCube(self.facelets)
-        self.c = CoordCube(self.f.to_cubiecube())
+        self.c = CoordCube.from_cubiecube(self.f.to_cubiecube())
         self.twist[0] = self.c.twist
         self.flip[0] = self.c.flip
         self.udslice[0] = self.c.udslice
@@ -181,71 +249,3 @@ class Solver:
             elif self.power[i] == 3:
                 s += "' "
         return s
-
-    def solve(
-        self,
-        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
-        timeout=10,
-    ):
-        """
-        Solve the cube.
-
-        This method implements back to back IDA* searches for phase 1 and phase
-        2. Once the first solution has been found the algorithm checks for
-        shorter solutions, including checking whether there is a shorter
-        overall solution with a longer first phase.
-
-        Parameters
-        ----------
-        facelets: str
-            Starting position of the cube. Should be a 54 character string
-            specifying the stickers on each face (in order U R F D L B),
-            reading row by row from the top left hand corner to the bottom
-            right.
-        timeout: int, optional
-            Limit the amount of time search is run for. Default is 10 seconds.
-            If max_length is left at the default value of 25, then a solution
-            will almost certainly be found almost instantly. However once a
-            solution has been found, the algorithm continues to search for
-            shorter solutions which takes longer as the search space is
-            constrained.
-        """
-        self.facelets = facelets.upper()
-        status = tools.verify(self.facelets)
-        if status:
-            error_message = {
-                -1: "each colour should appear exactly 9 times",
-                -2: "not all edges exist exactly once",
-                -3: "one edge should be flipped",
-                -4: "not all corners exist exactly once",
-                -5: "one corner should be twisted",
-                -6: "two corners or edges should be exchanged",
-            }
-            raise ValueError("Invalid cube: {}".format(error_message[status]))
-
-        # prepare for phase 1
-        self._phase_1_initialise()
-
-        self.timeout = timeout
-        self.t_start = time.time()
-        self._allowed_length = self.max_length
-
-        while time.time() - self.t_start <= self.timeout:
-            solution_not_found = True
-            for depth in range(self._allowed_length):
-                n = self._phase_1_search(0, depth)
-                if n >= 0:
-                    solution_not_found = False
-                    print(self._solution_to_string(n))
-                    self._allowed_length = n - 1
-                    break
-                if n == -2:
-                    # this is a bit ugly, need a better way of ending the
-                    # search at timeout that doesn't misreport that the
-                    # shortest possible solution has been found.
-                    solution_not_found = False
-                    print("Reached time limit, ending search.")
-                    break
-            if solution_not_found:
-                print("No shorter solution found.")
-                break

@@ -537,9 +537,7 @@ class CubieCube:
         """
         if not 0 <= edge4 < 24:
             raise ValueError(
-                "{} is out of range for edge4, must take values in 0, ..., 23".format(
-                    edge4
-                )
+                f"{edge4} is out of range for edge4, must take values in 0-23"
             )
         sliceedge = [edge.FR, edge.FL, edge.BL, edge.BR]
         coeffs = [0] * 3
