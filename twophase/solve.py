@@ -6,22 +6,10 @@ from .cubie_cube import MOVE_CUBE
 from .face_cube import FaceCube
 
 
-class Solver:
-    def __init__(self, max_length=25):
-        self.max_length = max_length
-
-    def solve(
-        self,
-        facelets="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
-        timeout=10,
-    ):
+class SolutionManager:
+    def __init__(self, facelets):
         """
-        Solve the cube.
-
-        This method implements back to back IDA* searches for phase 1 and phase
-        2. Once the first solution has been found the algorithm checks for
-        shorter solutions, including checking whether there is a shorter
-        overall solution with a longer first phase.
+        A utility class for managing the search for the solution.
 
         Parameters
         ----------
@@ -29,16 +17,10 @@ class Solver:
             Starting position of the cube. Should be a 54 character string
             specifying the stickers on each face (in order U R F D L B),
             reading row by row from the top left hand corner to the bottom
-            right.
-        timeout: int, optional
-            Limit the amount of time search is run for. Default is 10 seconds.
-            If max_length is left at the default value of 25, then a solution
-            will almost certainly be found almost instantly. However once a
-            solution has been found, the algorithm continues to search for
-            shorter solutions which takes longer as the search space is
-            constrained.
+            right
         """
         self.facelets = facelets.upper()
+
         status = self.verify()
         if status:
             error_message = {
@@ -51,32 +33,38 @@ class Solver:
             }
             raise ValueError("Invalid cube: {}".format(error_message[status]))
 
+    def solve(self, max_length=25, timeout=float("inf")):
+        """
+        Solve the cube.
+
+        This method implements back to back IDA* searches for phase 1 and phase
+        2, returning the result. Can be called multiple times with decreasing
+        max_length to try and find better solutions.
+
+        Parameters
+        ----------
+        max_length: int, optional
+            Upper bound for the allowed number of moves.
+        max_time: int or float, optional
+            Time at which to quit searching. Algorithm will quit when
+            ``time.time() > max_time``.
+        """
         # prepare for phase 1
-        self._phase_1_initialise()
+        self._phase_1_initialise(max_length)
+        self._allowed_length = max_length
+        self._timeout = timeout
 
-        self.timeout = timeout
-        self.t_start = time.time()
-        self._allowed_length = self.max_length
+        for depth in range(self._allowed_length):
+            n = self._phase_1_search(0, depth)
+            if n >= 0:
+                # solution found
+                return self._solution_to_string(n)
+            elif n == -2:
+                # time limit exceeded
+                return -2
 
-        while time.time() - self.t_start <= self.timeout:
-            solution_not_found = True
-            for depth in range(self._allowed_length):
-                n = self._phase_1_search(0, depth)
-                if n >= 0:
-                    solution_not_found = False
-                    print(self._solution_to_string(n))
-                    self._allowed_length = n - 1
-                    break
-                if n == -2:
-                    # this is a bit ugly, need a better way of ending the
-                    # search at timeout that doesn't misreport that the
-                    # shortest possible solution has been found.
-                    solution_not_found = False
-                    print("Reached time limit, ending search.")
-                    break
-            if solution_not_found:
-                print("No shorter solution found.")
-                break
+        # no solution found
+        return -1
 
     def verify(self):
         count = [0] * 6
@@ -94,32 +82,32 @@ class Solver:
 
         return cc.verify()
 
-    def _phase_1_initialise(self):
+    def _phase_1_initialise(self, max_length):
         # the lists 'axis' and 'power' will store the nth move (index of face
         # being turned stored in axis, number of clockwise quarter turns stored
         # in power). The nth move is stored in position n-1
-        self.axis = [0] * self.max_length
-        self.power = [0] * self.max_length
+        self.axis = [0] * max_length
+        self.power = [0] * max_length
 
         # the lists twist, flip and udslice store the phase 1 coordinates after
         # n moves. position 0 stores the inital states, the coordinates after n
         # moves are stored in position n
-        self.twist = [0] * self.max_length
-        self.flip = [0] * self.max_length
-        self.udslice = [0] * self.max_length
+        self.twist = [0] * max_length
+        self.flip = [0] * max_length
+        self.udslice = [0] * max_length
 
         # similarly to above, these lists store the phase 2 coordinates after n
         # moves.
-        self.corner = [0] * self.max_length
-        self.edge4 = [0] * self.max_length
-        self.edge8 = [0] * self.max_length
+        self.corner = [0] * max_length
+        self.edge4 = [0] * max_length
+        self.edge8 = [0] * max_length
 
         # the following two arrays store minimum number of moves required to
         # reach phase 2 or a solution respectively
         # after n moves. these estimates come from the pruning tables and are
         # used to exclude branches in the search tree.
-        self.min_dist_1 = [0] * self.max_length
-        self.min_dist_2 = [0] * self.max_length
+        self.min_dist_1 = [0] * max_length
+        self.min_dist_2 = [0] * max_length
 
         # initialise the arrays from the input
         self.f = FaceCube(self.facelets)
@@ -133,7 +121,7 @@ class Solver:
         self.min_dist_1[0] = self._phase_1_cost(0)
 
     def _phase_2_initialise(self, n):
-        if time.time() - self.t_start > self.timeout:
+        if time.time() > self._timeout:
             return -2
         # initialise phase 2 search from the phase 1 solution
         cc = self.f.to_cubiecube()
@@ -175,7 +163,7 @@ class Solver:
         )
 
     def _phase_1_search(self, n, depth):
-        if time.time() - self.t_start > self.timeout:
+        if time.time() > self._timeout:
             return -2
         elif self.min_dist_1[n] == 0:
             return self._phase_2_initialise(n)
@@ -184,7 +172,7 @@ class Solver:
                 if n > 0 and self.axis[n - 1] in (i, i + 3):
                     # don't turn the same face on consecutive moves
                     # also for opposite faces, e.g. U and D, UD = DU, so we can
-                    # assume that the lower index happens first.
+                    # impose that the lower index happens first.
                     continue
                 for j in range(1, 4):
                     self.axis[n] = i
@@ -208,13 +196,13 @@ class Solver:
                     if m >= 0:
                         return m
                     if m == -2:
+                        # time limit exceeded
                         return -2
         # if no solution found at current depth, return -1
         return -1
 
     def _phase_2_search(self, n, depth):
         if self.min_dist_2[n] == 0:
-            print("Solution found!")
             return n
         elif self.min_dist_2[n] <= depth:
             for i in range(6):
@@ -255,13 +243,18 @@ class Solver:
         clockwise quarter turn of the F face, U' means a counter clockwise
         quarter turn of the U face, R2 means a half turn of the R face etc.
         """
-        s = ""
-        for i in range(length):
-            s += color.COLORS[self.axis[i]]
-            if self.power[i] == 1:
-                s += " "
-            elif self.power[i] == 2:
-                s += "2 "
-            elif self.power[i] == 3:
-                s += "' "
-        return s
+
+        def recover_move(axis_power):
+            axis, power = axis_power
+            if power == 1:
+                return color.COLORS[axis]
+            if power == 2:
+                return color.COLORS[axis] + "2"
+            if power == 3:
+                return color.COLORS[axis] + "'"
+            raise RuntimeError("Invalid move in solution.")
+
+        solution = map(
+            recover_move, zip(self.axis[:length], self.power[:length])
+        )
+        return " ".join(solution)
