@@ -1,9 +1,8 @@
 import time
 
 from .color import Color
-from .coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
-from .cubie_cube import MOVE_CUBE
-from .face_cube import FaceCube
+from .cubes import CoordCube, FaceCube
+from .cubes.coordcube import CORNER, EDGE8, FLIP, TWIST
 
 
 class SolutionManager:
@@ -127,7 +126,7 @@ class SolutionManager:
         cc = self.f.to_cubiecube()
         for i in range(n):
             for j in range(self.power[i]):
-                cc.multiply(MOVE_CUBE[self.axis[i]])
+                cc.move(self.axis[i])
         self.edge4[n] = cc.edge4
         self.edge8[n] = cc.edge8
         self.corner[n] = cc.corner

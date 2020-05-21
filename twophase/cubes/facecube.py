@@ -1,6 +1,6 @@
-from . import cubie_cube
-from .color import Color
-from .facelet import Facelet
+from ..color import Color
+from ..facelet import Facelet
+from . import cubiecube
 
 # Maps corner positions to facelet positions
 corner_facelet = (
@@ -75,7 +75,7 @@ class FaceCube:
 
     def to_cubiecube(self):
         """Convert FaceCube to CubieCube"""
-        cc = cubie_cube.CubieCube()
+        cc = cubiecube.CubieCube()
         for i in range(8):
             # all corner names start with U or D, allowing us to find
             # orientation of any given corner as follows

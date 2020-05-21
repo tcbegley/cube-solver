@@ -3,9 +3,9 @@ This class describes cubes on the level of the cubies.
 """
 from functools import reduce
 
-from . import face_cube
-from .corner import Corner
-from .edge import Edge
+from ..corner import Corner
+from ..edge import Edge
+from . import facecube
 
 
 def choose(n, k):
@@ -294,6 +294,12 @@ class CubieCube:
         self.corner_multiply(b)
         self.edge_multiply(b)
 
+    def move(self, i):
+        """
+        Helper function for applying one of 6 canonical moves
+        """
+        self.multiply(MOVE_CUBE[i])
+
     def inverse_cubiecube(self):
         """
         Compute the inverse of the current cube.
@@ -314,20 +320,20 @@ class CubieCube:
         """
         Convert CubieCube to FaceCube.
         """
-        ret = face_cube.FaceCube()
+        ret = facecube.FaceCube()
         for i in range(8):
             j = self.cp[i]
             ori = self.co[i]
             for k in range(3):
                 ret.f[
-                    face_cube.corner_facelet[i][(k + ori) % 3]
-                ] = face_cube.corner_color[j][k]
+                    facecube.corner_facelet[i][(k + ori) % 3]
+                ] = facecube.corner_color[j][k]
         for i in range(12):
             j = self.ep[i]
             ori = self.eo[i]
             for k in range(2):
-                facelet_index = face_cube.edge_facelet[i][(k + ori) % 2]
-                ret.f[facelet_index] = face_cube.edge_color[j][k]
+                facelet_index = facecube.edge_facelet[i][(k + ori) % 2]
+                ret.f[facelet_index] = facecube.edge_color[j][k]
         return ret
 
     @property
