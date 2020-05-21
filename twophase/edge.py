@@ -1,48 +1,16 @@
-"""
-We enumerate the edge pieces and provide a dictionary for lookup of the
-pieces.
-"""
+from enum import IntEnum
 
-UR, UF, UL, UB, DR, DF, DL, DB, FR, FL, BL, BR = range(12)
 
-# Create two way lookup of strings / indices
-EDGES = {
-    **dict(
-        zip(
-            (
-                "UR",
-                "UF",
-                "UL",
-                "UB",
-                "DR",
-                "DF",
-                "DL",
-                "DB",
-                "FR",
-                "FL",
-                "BL",
-                "BR",
-            ),
-            range(12),
-        )
-    ),
-    **dict(
-        zip(
-            range(12),
-            (
-                "UR",
-                "UF",
-                "UL",
-                "UB",
-                "DR",
-                "DF",
-                "DL",
-                "DB",
-                "FR",
-                "FL",
-                "BL",
-                "BR",
-            ),
-        )
-    ),
-}
+class Edge(IntEnum):
+    UR = 0
+    UF = 1
+    UL = 2
+    UB = 3
+    DR = 4
+    DF = 5
+    DL = 6
+    DB = 7
+    FR = 8
+    FL = 9
+    BL = 10
+    BR = 11

@@ -1,6 +1,6 @@
 import time
 
-from . import color
+from .color import Color
 from .coord_cube import CORNER, EDGE8, FLIP, TWIST, CoordCube
 from .cubie_cube import MOVE_CUBE
 from .face_cube import FaceCube
@@ -70,7 +70,7 @@ class SolutionManager:
         count = [0] * 6
         try:
             for char in self.facelets:
-                count[color.COLORS[char]] += 1
+                count[Color[char]] += 1
         except (IndexError, ValueError):
             return -1
         for i in range(6):
@@ -247,11 +247,11 @@ class SolutionManager:
         def recover_move(axis_power):
             axis, power = axis_power
             if power == 1:
-                return color.COLORS[axis]
+                return Color(axis).name
             if power == 2:
-                return color.COLORS[axis] + "2"
+                return Color(axis).name + "2"
             if power == 3:
-                return color.COLORS[axis] + "'"
+                return Color(axis).name + "'"
             raise RuntimeError("Invalid move in solution.")
 
         solution = map(

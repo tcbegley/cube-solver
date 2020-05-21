@@ -1,10 +1,12 @@
-"""
-We enumerate the corner pieces and provide a dictionary for lookup of the
-pieces.
-"""
+from enum import IntEnum
 
-URF, UFL, ULB, UBR, DFR, DLF, DBL, DRB = range(8)
 
-CORNERS = dict(
-    zip(("URF", "UFL", "ULB", "UBR", "DFR", "DLF", "DBL", "DRB"), range(8))
-)
+class Corner(IntEnum):
+    URF = 0
+    UFL = 1
+    ULB = 2
+    UBR = 3
+    DFR = 4
+    DLF = 5
+    DBL = 6
+    DRB = 7

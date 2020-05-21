@@ -1,11 +1,10 @@
-"""
-We enumerate the colors and provide a dictionary for lookup of each color.
-"""
+from enum import IntEnum
 
-U, R, F, D, L, B = range(6)
 
-# Create two way lookup of strings / indices
-COLORS = {
-    **dict(zip(("U", "R", "F", "D", "L", "B"), range(6))),
-    **dict(zip(range(6), ("U", "R", "F", "D", "L", "B"))),
-}
+class Color(IntEnum):
+    U = 0
+    R = 1
+    F = 2
+    D = 3
+    L = 4
+    B = 5
