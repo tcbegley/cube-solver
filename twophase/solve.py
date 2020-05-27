@@ -1,8 +1,8 @@
 import time
 
-from .pieces import Color
 from .cubes import CoordCube, FaceCube
-from .cubes.coordcube import CORNER, EDGE8, FLIP, TWIST
+from .pieces import Color
+from .tables import CORNER, EDGE8, FLIP, TWIST, Tables
 
 
 class SolutionManager:
@@ -18,6 +18,8 @@ class SolutionManager:
             reading row by row from the top left hand corner to the bottom
             right
         """
+        self.tables = Tables
+
         self.facelets = facelets.upper()
 
         status = self.verify()
@@ -145,8 +147,8 @@ class SolutionManager:
         udslice_twist = self.udslice[n] * TWIST + self.twist[n]
         udslice_flip = self.udslice[n] * FLIP + self.flip[n]
         return max(
-            CoordCube.tables["udslice_twist_prune"][udslice_twist],
-            CoordCube.tables["udslice_flip_prune"][udslice_flip],
+            self.tables.udslice_twist_prune[udslice_twist],
+            self.tables.udslice_flip_prune[udslice_flip],
         )
 
     def _phase_2_cost(self, n):
@@ -157,8 +159,8 @@ class SolutionManager:
         edge4_corner = self.edge4[n] * CORNER + self.corner[n]
         edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
         return max(
-            CoordCube.tables["edge4_corner_prune"][edge4_corner],
-            CoordCube.tables["edge4_edge8_prune"][edge4_edge8],
+            self.tables.edge4_corner_prune[edge4_corner],
+            self.tables.edge4_edge8_prune[edge4_edge8],
         )
 
     def _phase_1_search(self, n, depth):
@@ -179,13 +181,11 @@ class SolutionManager:
                     mv = 3 * i + j - 1
 
                     # update coordinates
-                    self.twist[n + 1] = CoordCube.tables["twist_move"][
-                        self.twist[n]
-                    ][mv]
-                    self.flip[n + 1] = CoordCube.tables["flip_move"][
-                        self.flip[n]
-                    ][mv]
-                    self.udslice[n + 1] = CoordCube.tables["udslice_move"][
+                    self.twist[n + 1] = self.tables.twist_move[self.twist[n]][
+                        mv
+                    ]
+                    self.flip[n + 1] = self.tables.flip_move[self.flip[n]][mv]
+                    self.udslice[n + 1] = self.tables.udslice_move[
                         self.udslice[n]
                     ][mv]
                     self.min_dist_1[n + 1] = self._phase_1_cost(n + 1)
@@ -217,13 +217,13 @@ class SolutionManager:
                     mv = 3 * i + j - 1
 
                     # update coordinates following the move mv
-                    self.edge4[n + 1] = CoordCube.tables["edge4_move"][
-                        self.edge4[n]
-                    ][mv]
-                    self.edge8[n + 1] = CoordCube.tables["edge8_move"][
-                        self.edge8[n]
-                    ][mv]
-                    self.corner[n + 1] = CoordCube.tables["corner_move"][
+                    self.edge4[n + 1] = self.tables.edge4_move[self.edge4[n]][
+                        mv
+                    ]
+                    self.edge8[n + 1] = self.tables.edge8_move[self.edge8[n]][
+                        mv
+                    ]
+                    self.corner[n + 1] = self.tables.corner_move[
                         self.corner[n]
                     ][mv]
                     self.min_dist_2[n + 1] = self._phase_2_cost(n + 1)
