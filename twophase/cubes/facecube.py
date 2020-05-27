@@ -1,5 +1,4 @@
-from ..color import Color
-from ..facelet import Facelet
+from ..pieces import Color, Facelet
 from . import cubiecube
 
 # Maps corner positions to facelet positions

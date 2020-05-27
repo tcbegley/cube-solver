@@ -1,6 +1,6 @@
 import time
 
-from .color import Color
+from .pieces import Color
 from .cubes import CoordCube, FaceCube
 from .cubes.coordcube import CORNER, EDGE8, FLIP, TWIST
 

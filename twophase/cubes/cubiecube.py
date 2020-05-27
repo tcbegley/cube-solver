@@ -3,8 +3,7 @@ This class describes cubes on the level of the cubies.
 """
 from functools import reduce
 
-from ..corner import Corner
-from ..edge import Edge
+from ..pieces import Corner, Edge
 from . import facecube
 
 
