@@ -1,29 +1,30 @@
 # cube-solver
+
 A pure python implementation of Herbert Kociemba's two-phase algorithm for solving the Rubik's Cube
 
 ## Installation
 
 Requires Python 3. Install with
 
-```
+```sh
 pip install git+https://github.com/tcbegley/cube-solver.git
 ```
+
 Note that depending on how your system is configured, you may need to replace `pip` with `pip3` in the above command to install for Python 3.
 
 ## Usage
 
-Better interfaces are planned, but for now, you can try running the following in python
+To solve a cube, just import the `solve` method and pass a cube string.
 
-```
-from twophase.solve import Solver
+```python
+from twophase import solve
 
-s = Solver()
-s.solve("<cube_string>")
+solve("<cube_string>")
 ```
 
 Where the cube string is a 54 character string, consisting of the characters U, R, F, D, L, B (corresponding to the Upper, Right, Front, Down, Left and Back faces). Each character corresponds to one of the 54 stickers on the cube:
 
-```
+```plaintext
              |------------|
              |-U1--U2--U3-|
              |------------|
@@ -49,4 +50,20 @@ and should be specified in the order U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9.
 
 For example, a completely solved cube is represented by the string `"UUUUUUUUURRRRRRRRRBBBBBBBBBDDDDDDDDDLLLLLLLLLBBBBBBBBB"`.
 
-Solve will search until the shortest solution has been found or timeout has been reached (default is 10 seconds). Typically it will find a solution instantly, and improve on it once or twice. I believe in principle it should eventually find an optimal solution, but usually times out before it can.
+`solve` will return a solution unless timeout has been reached (default is 10 seconds). Typically it will find a solution very quickly unless you set a low upper bound on the number of moves allowed.
+
+If you want to keep searching for better solutions, use the `solve_best` or
+`solve_best_generator` functions. `solve_best` reduces `max_length` each time a
+solution is found and continues searching for a better solution. All solutions
+found are returned in a list at the end. `solve_best_generator` creates a
+generator that yields solutions as they are found.
+
+```python
+from twophase import solve_best, solve_best_generator
+
+# returns a list of solutions
+solve_best("<cube_string>")
+
+# creates a generator that yields solutions as they are found
+solve_best_generator("<cube_string>")
+```
