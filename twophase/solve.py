@@ -18,7 +18,7 @@ class SolutionManager:
             reading row by row from the top left hand corner to the bottom
             right
         """
-        self.tables = Tables
+        self.tables = Tables()
 
         self.facelets = facelets.upper()
 
