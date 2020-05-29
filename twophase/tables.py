@@ -42,6 +42,8 @@ class Tables:
     EDGE8 = 40320
     # 8! possible permutations of the corners
     CORNER = 40320
+    # 12! possible permutations of all edges
+    EDGE = 479001600
     # 6*3 possible moves
     MOVES = 18
 

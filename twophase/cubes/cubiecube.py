@@ -676,7 +676,7 @@ class CubieCube:
             Order of the 8 aforementioned edges encoded as edge8 coordinate.
             Must satisfy 0 <= edge8 < 8!
         """
-        edges = range(12)
+        edges = list(range(12))
         perm = [0] * 12
         coeffs = [0] * 11
         for i in range(1, 12):
