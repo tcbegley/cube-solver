@@ -4,22 +4,6 @@ import os
 from .cubes.cubiecube import MOVE_CUBE, CubieCube
 
 
-# 3^7 possible corner orientations
-TWIST = 2187
-# 2^11 possible edge flips
-FLIP = 2048
-# 12C4 possible positions of FR, FL, BL, BR
-UDSLICE = 495
-# 4! possible permutations of FR, FL, BL, BR
-EDGE4 = 24
-# 8! possible permutations of UR, UF, UL, UB, DR, DF, DL, DB in phase two
-EDGE8 = 40320
-# 8! possible permutations of the corners
-CORNER = 40320
-# 6*3 possible moves
-MOVES = 18
-
-
 class Tables:
     """
     Class for holding move and pruning tables in memory.
@@ -32,6 +16,21 @@ class Tables:
     """
 
     _tables_loaded = False
+
+    # 3^7 possible corner orientations
+    TWIST = 2187
+    # 2^11 possible edge flips
+    FLIP = 2048
+    # 12C4 possible positions of FR, FL, BL, BR
+    UDSLICE = 495
+    # 4! possible permutations of FR, FL, BL, BR
+    EDGE4 = 24
+    # 8! possible permutations of UR, UF, UL, UB, DR, DF, DL, DB in phase two
+    EDGE8 = 40320
+    # 8! possible permutations of the corners
+    CORNER = 40320
+    # 6*3 possible moves
+    MOVES = 18
 
     def __init__(self):
         if not self._tables_loaded:
@@ -88,11 +87,11 @@ class Tables:
 
         cls._tables_loaded = True
 
-    @staticmethod
-    def make_twist_table():
-        twist_move = [[0] * MOVES for i in range(TWIST)]
+    @classmethod
+    def make_twist_table(cls):
+        twist_move = [[0] * cls.MOVES for i in range(cls.TWIST)]
         a = CubieCube()
-        for i in range(TWIST):
+        for i in range(cls.TWIST):
             a.twist = i
             for j in range(6):
                 for k in range(3):
@@ -101,11 +100,11 @@ class Tables:
                 a.corner_multiply(MOVE_CUBE[j])
         return twist_move
 
-    @staticmethod
-    def make_flip_table():
-        flip_move = [[0] * MOVES for i in range(FLIP)]
+    @classmethod
+    def make_flip_table(cls):
+        flip_move = [[0] * cls.MOVES for i in range(cls.FLIP)]
         a = CubieCube()
-        for i in range(FLIP):
+        for i in range(cls.FLIP):
             a.flip = i
             for j in range(6):
                 for k in range(3):
@@ -114,11 +113,11 @@ class Tables:
                 a.edge_multiply(MOVE_CUBE[j])
         return flip_move
 
-    @staticmethod
-    def make_udslice_table():
-        udslice_move = [[0] * MOVES for i in range(UDSLICE)]
+    @classmethod
+    def make_udslice_table(cls):
+        udslice_move = [[0] * cls.MOVES for i in range(cls.UDSLICE)]
         a = CubieCube()
-        for i in range(UDSLICE):
+        for i in range(cls.UDSLICE):
             a.udslice = i
             for j in range(6):
                 for k in range(3):
@@ -127,11 +126,11 @@ class Tables:
                 a.edge_multiply(MOVE_CUBE[j])
         return udslice_move
 
-    @staticmethod
-    def make_edge4_table():
-        edge4_move = [[0] * MOVES for i in range(EDGE4)]
+    @classmethod
+    def make_edge4_table(cls):
+        edge4_move = [[0] * cls.MOVES for i in range(cls.EDGE4)]
         a = CubieCube()
-        for i in range(EDGE4):
+        for i in range(cls.EDGE4):
             a.edge4 = i
             for j in range(6):
                 for k in range(3):
@@ -143,11 +142,11 @@ class Tables:
                 a.edge_multiply(MOVE_CUBE[j])
         return edge4_move
 
-    @staticmethod
-    def make_edge8_table():
-        edge8_move = [[0] * MOVES for i in range(EDGE8)]
+    @classmethod
+    def make_edge8_table(cls):
+        edge8_move = [[0] * cls.MOVES for i in range(cls.EDGE8)]
         a = CubieCube()
-        for i in range(EDGE8):
+        for i in range(cls.EDGE8):
             a.edge8 = i
             for j in range(6):
                 for k in range(3):
@@ -159,11 +158,11 @@ class Tables:
                 a.edge_multiply(MOVE_CUBE[j])
         return edge8_move
 
-    @staticmethod
-    def make_corner_table():
-        corner_move = [[0] * MOVES for i in range(CORNER)]
+    @classmethod
+    def make_corner_table(cls):
+        corner_move = [[0] * cls.MOVES for i in range(cls.CORNER)]
         a = CubieCube()
-        for i in range(CORNER):
+        for i in range(cls.CORNER):
             a.corner = i
             for j in range(6):
                 for k in range(3):
@@ -177,15 +176,15 @@ class Tables:
 
     @classmethod
     def make_udslice_twist_prune(cls):
-        udslice_twist_prune = [-1] * (UDSLICE * TWIST)
+        udslice_twist_prune = [-1] * (cls.UDSLICE * cls.TWIST)
         udslice_twist_prune[0] = 0
         count, depth = 1, 0
-        while count < UDSLICE * TWIST:
-            for i in range(UDSLICE * TWIST):
+        while count < cls.UDSLICE * cls.TWIST:
+            for i in range(cls.UDSLICE * cls.TWIST):
                 if udslice_twist_prune[i] == depth:
                     m = [
-                        cls.udslice_move[i // TWIST][j] * TWIST
-                        + cls.twist_move[i % TWIST][j]
+                        cls.udslice_move[i // cls.TWIST][j] * cls.TWIST
+                        + cls.twist_move[i % cls.TWIST][j]
                         for j in range(18)
                     ]
                     for x in m:
@@ -197,15 +196,15 @@ class Tables:
 
     @classmethod
     def make_udslice_flip_prune(cls):
-        udslice_flip_prune = [-1] * (UDSLICE * FLIP)
+        udslice_flip_prune = [-1] * (cls.UDSLICE * cls.FLIP)
         udslice_flip_prune[0] = 0
         count, depth = 1, 0
-        while count < UDSLICE * FLIP:
-            for i in range(UDSLICE * FLIP):
+        while count < cls.UDSLICE * cls.FLIP:
+            for i in range(cls.UDSLICE * cls.FLIP):
                 if udslice_flip_prune[i] == depth:
                     m = [
-                        cls.udslice_move[i // FLIP][j] * FLIP
-                        + cls.flip_move[i % FLIP][j]
+                        cls.udslice_move[i // cls.FLIP][j] * cls.FLIP
+                        + cls.flip_move[i % cls.FLIP][j]
                         for j in range(18)
                     ]
                     for x in m:
@@ -217,15 +216,15 @@ class Tables:
 
     @classmethod
     def make_edge4_edge8_prune(cls):
-        edge4_edge8_prune = [-1] * (EDGE4 * EDGE8)
+        edge4_edge8_prune = [-1] * (cls.EDGE4 * cls.EDGE8)
         edge4_edge8_prune[0] = 0
         count, depth = 1, 0
-        while count < EDGE4 * EDGE8:
-            for i in range(EDGE4 * EDGE8):
+        while count < cls.EDGE4 * cls.EDGE8:
+            for i in range(cls.EDGE4 * cls.EDGE8):
                 if edge4_edge8_prune[i] == depth:
                     m = [
-                        cls.edge4_move[i // EDGE8][j] * EDGE8
-                        + cls.edge8_move[i % EDGE8][j]
+                        cls.edge4_move[i // cls.EDGE8][j] * cls.EDGE8
+                        + cls.edge8_move[i % cls.EDGE8][j]
                         for j in range(18)
                     ]
                     for x in m:
@@ -237,15 +236,15 @@ class Tables:
 
     @classmethod
     def make_edge4_corner_prune(cls):
-        edge4_corner_prune = [-1] * (EDGE4 * CORNER)
+        edge4_corner_prune = [-1] * (cls.EDGE4 * cls.CORNER)
         edge4_corner_prune[0] = 0
         count, depth = 1, 0
-        while count < EDGE4 * CORNER:
-            for i in range(EDGE4 * CORNER):
+        while count < cls.EDGE4 * cls.CORNER:
+            for i in range(cls.EDGE4 * cls.CORNER):
                 if edge4_corner_prune[i] == depth:
                     m = [
-                        cls.edge4_move[i // CORNER][j] * CORNER
-                        + cls.corner_move[i % CORNER][j]
+                        cls.edge4_move[i // cls.CORNER][j] * cls.CORNER
+                        + cls.corner_move[i % cls.CORNER][j]
                         for j in range(18)
                     ]
                     for x in m:

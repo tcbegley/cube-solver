@@ -2,7 +2,7 @@ import time
 
 from .cubes import CoordCube, FaceCube
 from .pieces import Color
-from .tables import CORNER, EDGE8, FLIP, TWIST, Tables
+from .tables import Tables
 
 
 class SolutionManager:
@@ -144,8 +144,8 @@ class SolutionManager:
         Cost of current position for use in phase 1. Returns a lower bound on
         the number of moves requires to get to phase 2.
         """
-        udslice_twist = self.udslice[n] * TWIST + self.twist[n]
-        udslice_flip = self.udslice[n] * FLIP + self.flip[n]
+        udslice_twist = self.udslice[n] * Tables.TWIST + self.twist[n]
+        udslice_flip = self.udslice[n] * Tables.FLIP + self.flip[n]
         return max(
             self.tables.udslice_twist_prune[udslice_twist],
             self.tables.udslice_flip_prune[udslice_flip],
@@ -156,8 +156,8 @@ class SolutionManager:
         Cost of current position for use in phase 2. Returns a lower bound on
         the number of moves required to get to a solved cube.
         """
-        edge4_corner = self.edge4[n] * CORNER + self.corner[n]
-        edge4_edge8 = self.edge4[n] * EDGE8 + self.edge8[n]
+        edge4_corner = self.edge4[n] * Tables.CORNER + self.corner[n]
+        edge4_edge8 = self.edge4[n] * Tables.EDGE8 + self.edge8[n]
         return max(
             self.tables.edge4_corner_prune[edge4_corner],
             self.tables.edge4_edge8_prune[edge4_edge8],
