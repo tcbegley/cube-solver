@@ -3,7 +3,8 @@ This class describes cubes on the level of the cubies.
 """
 from functools import reduce
 
-from . import corner, edge, face_cube
+from ..pieces import Corner, Edge
+from . import facecube
 
 
 def choose(n, k):
@@ -26,164 +27,164 @@ def choose(n, k):
 # U, R, F, D, L, B resp from a clean cube. This will be used to compute move
 # tables and the composition rules.
 _cpU = (
-    corner.UBR,
-    corner.URF,
-    corner.UFL,
-    corner.ULB,
-    corner.DFR,
-    corner.DLF,
-    corner.DBL,
-    corner.DRB,
+    Corner.UBR,
+    Corner.URF,
+    Corner.UFL,
+    Corner.ULB,
+    Corner.DFR,
+    Corner.DLF,
+    Corner.DBL,
+    Corner.DRB,
 )
 _coU = (0, 0, 0, 0, 0, 0, 0, 0)
 _epU = (
-    edge.UB,
-    edge.UR,
-    edge.UF,
-    edge.UL,
-    edge.DR,
-    edge.DF,
-    edge.DL,
-    edge.DB,
-    edge.FR,
-    edge.FL,
-    edge.BL,
-    edge.BR,
+    Edge.UB,
+    Edge.UR,
+    Edge.UF,
+    Edge.UL,
+    Edge.DR,
+    Edge.DF,
+    Edge.DL,
+    Edge.DB,
+    Edge.FR,
+    Edge.FL,
+    Edge.BL,
+    Edge.BR,
 )
 _eoU = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 _cpR = (
-    corner.DFR,
-    corner.UFL,
-    corner.ULB,
-    corner.URF,
-    corner.DRB,
-    corner.DLF,
-    corner.DBL,
-    corner.UBR,
+    Corner.DFR,
+    Corner.UFL,
+    Corner.ULB,
+    Corner.URF,
+    Corner.DRB,
+    Corner.DLF,
+    Corner.DBL,
+    Corner.UBR,
 )
 _coR = (2, 0, 0, 1, 1, 0, 0, 2)
 _epR = (
-    edge.FR,
-    edge.UF,
-    edge.UL,
-    edge.UB,
-    edge.BR,
-    edge.DF,
-    edge.DL,
-    edge.DB,
-    edge.DR,
-    edge.FL,
-    edge.BL,
-    edge.UR,
+    Edge.FR,
+    Edge.UF,
+    Edge.UL,
+    Edge.UB,
+    Edge.BR,
+    Edge.DF,
+    Edge.DL,
+    Edge.DB,
+    Edge.DR,
+    Edge.FL,
+    Edge.BL,
+    Edge.UR,
 )
 _eoR = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 _cpF = (
-    corner.UFL,
-    corner.DLF,
-    corner.ULB,
-    corner.UBR,
-    corner.URF,
-    corner.DFR,
-    corner.DBL,
-    corner.DRB,
+    Corner.UFL,
+    Corner.DLF,
+    Corner.ULB,
+    Corner.UBR,
+    Corner.URF,
+    Corner.DFR,
+    Corner.DBL,
+    Corner.DRB,
 )
 _coF = (1, 2, 0, 0, 2, 1, 0, 0)
 _epF = (
-    edge.UR,
-    edge.FL,
-    edge.UL,
-    edge.UB,
-    edge.DR,
-    edge.FR,
-    edge.DL,
-    edge.DB,
-    edge.UF,
-    edge.DF,
-    edge.BL,
-    edge.BR,
+    Edge.UR,
+    Edge.FL,
+    Edge.UL,
+    Edge.UB,
+    Edge.DR,
+    Edge.FR,
+    Edge.DL,
+    Edge.DB,
+    Edge.UF,
+    Edge.DF,
+    Edge.BL,
+    Edge.BR,
 )
 _eoF = (0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0)
 
 _cpD = (
-    corner.URF,
-    corner.UFL,
-    corner.ULB,
-    corner.UBR,
-    corner.DLF,
-    corner.DBL,
-    corner.DRB,
-    corner.DFR,
+    Corner.URF,
+    Corner.UFL,
+    Corner.ULB,
+    Corner.UBR,
+    Corner.DLF,
+    Corner.DBL,
+    Corner.DRB,
+    Corner.DFR,
 )
 _coD = (0, 0, 0, 0, 0, 0, 0, 0)
 _epD = (
-    edge.UR,
-    edge.UF,
-    edge.UL,
-    edge.UB,
-    edge.DF,
-    edge.DL,
-    edge.DB,
-    edge.DR,
-    edge.FR,
-    edge.FL,
-    edge.BL,
-    edge.BR,
+    Edge.UR,
+    Edge.UF,
+    Edge.UL,
+    Edge.UB,
+    Edge.DF,
+    Edge.DL,
+    Edge.DB,
+    Edge.DR,
+    Edge.FR,
+    Edge.FL,
+    Edge.BL,
+    Edge.BR,
 )
 _eoD = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 _cpL = (
-    corner.URF,
-    corner.ULB,
-    corner.DBL,
-    corner.UBR,
-    corner.DFR,
-    corner.UFL,
-    corner.DLF,
-    corner.DRB,
+    Corner.URF,
+    Corner.ULB,
+    Corner.DBL,
+    Corner.UBR,
+    Corner.DFR,
+    Corner.UFL,
+    Corner.DLF,
+    Corner.DRB,
 )
 _coL = (0, 1, 2, 0, 0, 2, 1, 0)
 _epL = (
-    edge.UR,
-    edge.UF,
-    edge.BL,
-    edge.UB,
-    edge.DR,
-    edge.DF,
-    edge.FL,
-    edge.DB,
-    edge.FR,
-    edge.UL,
-    edge.DL,
-    edge.BR,
+    Edge.UR,
+    Edge.UF,
+    Edge.BL,
+    Edge.UB,
+    Edge.DR,
+    Edge.DF,
+    Edge.FL,
+    Edge.DB,
+    Edge.FR,
+    Edge.UL,
+    Edge.DL,
+    Edge.BR,
 )
 _eoL = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 _cpB = (
-    corner.URF,
-    corner.UFL,
-    corner.UBR,
-    corner.DRB,
-    corner.DFR,
-    corner.DLF,
-    corner.ULB,
-    corner.DBL,
+    Corner.URF,
+    Corner.UFL,
+    Corner.UBR,
+    Corner.DRB,
+    Corner.DFR,
+    Corner.DLF,
+    Corner.ULB,
+    Corner.DBL,
 )
 _coB = (0, 0, 1, 2, 0, 0, 2, 1)
 _epB = (
-    edge.UR,
-    edge.UF,
-    edge.UL,
-    edge.BR,
-    edge.DR,
-    edge.DF,
-    edge.DL,
-    edge.BL,
-    edge.FR,
-    edge.FL,
-    edge.UB,
-    edge.DB,
+    Edge.UR,
+    Edge.UF,
+    Edge.UL,
+    Edge.BR,
+    Edge.DR,
+    Edge.DF,
+    Edge.DL,
+    Edge.BL,
+    Edge.FR,
+    Edge.FL,
+    Edge.UB,
+    Edge.DB,
 )
 _eoB = (0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1)
 
@@ -198,29 +199,29 @@ class CubieCube:
         else:
             # Initialise clean cube if position not given.
             self.cp = [
-                corner.URF,
-                corner.UFL,
-                corner.ULB,
-                corner.UBR,
-                corner.DFR,
-                corner.DLF,
-                corner.DBL,
-                corner.DRB,
+                Corner.URF,
+                Corner.UFL,
+                Corner.ULB,
+                Corner.UBR,
+                Corner.DFR,
+                Corner.DLF,
+                Corner.DBL,
+                Corner.DRB,
             ]
             self.co = [0, 0, 0, 0, 0, 0, 0, 0]
             self.ep = [
-                edge.UR,
-                edge.UF,
-                edge.UL,
-                edge.UB,
-                edge.DR,
-                edge.DF,
-                edge.DL,
-                edge.DB,
-                edge.FR,
-                edge.FL,
-                edge.BL,
-                edge.BR,
+                Edge.UR,
+                Edge.UF,
+                Edge.UL,
+                Edge.UB,
+                Edge.DR,
+                Edge.DF,
+                Edge.DL,
+                Edge.DB,
+                Edge.FR,
+                Edge.FL,
+                Edge.BL,
+                Edge.BR,
             ]
             self.eo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -292,6 +293,12 @@ class CubieCube:
         self.corner_multiply(b)
         self.edge_multiply(b)
 
+    def move(self, i):
+        """
+        Helper function for applying one of 6 canonical moves
+        """
+        self.multiply(MOVE_CUBE[i])
+
     def inverse_cubiecube(self):
         """
         Compute the inverse of the current cube.
@@ -312,20 +319,20 @@ class CubieCube:
         """
         Convert CubieCube to FaceCube.
         """
-        ret = face_cube.FaceCube()
+        ret = facecube.FaceCube()
         for i in range(8):
             j = self.cp[i]
             ori = self.co[i]
             for k in range(3):
                 ret.f[
-                    face_cube.corner_facelet[i][(k + ori) % 3]
-                ] = face_cube.corner_color[j][k]
+                    facecube.corner_facelet[i][(k + ori) % 3]
+                ] = facecube.corner_color[j][k]
         for i in range(12):
             j = self.ep[i]
             ori = self.eo[i]
             for k in range(2):
-                facelet_index = face_cube.edge_facelet[i][(k + ori) % 2]
-                ret.f[facelet_index] = face_cube.edge_color[j][k]
+                facelet_index = facecube.edge_facelet[i][(k + ori) % 2]
+                ret.f[facelet_index] = facecube.edge_color[j][k]
         return ret
 
     @property
@@ -474,20 +481,20 @@ class CubieCube:
                 "{} is out of range for udslice, must take values in "
                 "0, ..., 494.".format(udslice)
             )
-        udslice_edge = [edge.FR, edge.FL, edge.BL, edge.BR]
+        udslice_edge = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
         other_edge = [
-            edge.UR,
-            edge.UF,
-            edge.UL,
-            edge.UB,
-            edge.DR,
-            edge.DF,
-            edge.DL,
-            edge.DB,
+            Edge.UR,
+            Edge.UF,
+            Edge.UL,
+            Edge.UB,
+            Edge.DR,
+            Edge.DF,
+            Edge.DL,
+            Edge.DB,
         ]
         # invalidate edges
         for i in range(12):
-            self.ep[i] = edge.DB
+            self.ep[i] = Edge.DB
         # we first position the slice edges
         seen = 3
         for j in range(11, -1, -1):
@@ -499,7 +506,7 @@ class CubieCube:
         # then the remaining edges
         x = 0
         for j in range(12):
-            if self.ep[j] == edge.DB:
+            if self.ep[j] == Edge.DB:
                 self.ep[j] = other_edge[x]
                 x += 1
 
@@ -537,11 +544,9 @@ class CubieCube:
         """
         if not 0 <= edge4 < 24:
             raise ValueError(
-                "{} is out of range for edge4, must take values in 0, ..., 23".format(
-                    edge4
-                )
+                f"{edge4} is out of range for edge4, must take values in 0-23"
             )
-        sliceedge = [edge.FR, edge.FL, edge.BL, edge.BR]
+        sliceedge = [Edge.FR, Edge.FL, Edge.BL, Edge.BR]
         coeffs = [0] * 3
         for i in range(1, 4):
             coeffs[i - 1] = edge4 % (i + 1)
