@@ -50,7 +50,7 @@ and should be specified in the order U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9.
 
 For example, a completely solved cube is represented by the string `"UUUUUUUUURRRRRRRRRBBBBBBBBBDDDDDDDDDLLLLLLLLLBBBBBBBBB"`.
 
-`solve` will return a solution unless timeout has been reached (default is 10 seconds). Typically it will find a solution very quickly unless you set a low upper bound on the number of moves allowed.
+`solve` will return a solution unless timeout has been reached (default is 10 seconds). Typically it will find a solution very quickly unless you set a low upper bound on the number of moves allowed. Note that the first time you run `solve`, it will precompute move tables needed for the solution which might take ~1 minute. Subsequent runs will be much faster.
 
 If you want to keep searching for better solutions, use the `solve_best` or
 `solve_best_generator` functions. `solve_best` reduces `max_length` each time a
