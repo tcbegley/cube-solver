@@ -144,11 +144,9 @@ class SolutionManager:
         Cost of current position for use in phase 1. Returns a lower bound on
         the number of moves requires to get to phase 2.
         """
-        udslice_twist = self.udslice[n] * Tables.TWIST + self.twist[n]
-        udslice_flip = self.udslice[n] * Tables.FLIP + self.flip[n]
         return max(
-            self.tables.udslice_twist_prune[udslice_twist],
-            self.tables.udslice_flip_prune[udslice_flip],
+            self.tables.udslice_twist_prune[self.udslice[n], self.twist[n]],
+            self.tables.udslice_flip_prune[self.udslice[n], self.flip[n]],
         )
 
     def _phase_2_cost(self, n):
@@ -156,11 +154,9 @@ class SolutionManager:
         Cost of current position for use in phase 2. Returns a lower bound on
         the number of moves required to get to a solved cube.
         """
-        edge4_corner = self.edge4[n] * Tables.CORNER + self.corner[n]
-        edge4_edge8 = self.edge4[n] * Tables.EDGE8 + self.edge8[n]
         return max(
-            self.tables.edge4_corner_prune[edge4_corner],
-            self.tables.edge4_edge8_prune[edge4_edge8],
+            self.tables.edge4_corner_prune[self.edge4[n], self.corner[n]],
+            self.tables.edge4_edge8_prune[self.edge4[n], self.edge8[n]],
         )
 
     def _phase_1_search(self, n, depth):

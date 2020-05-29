@@ -4,6 +4,19 @@ import os
 from .cubes.cubiecube import MOVE_CUBE, CubieCube
 
 
+class PruningTable:
+    """
+    Helper class to allow pruning to be used as though they were 2-D tables
+    """
+
+    def __init__(self, table, stride):
+        self.table = table
+        self.stride = stride
+
+    def __getitem__(self, x):
+        return self.table[x[0] * self.stride + x[1]]
+
+
 class Tables:
     """
     Class for holding move and pruning tables in memory.
@@ -47,10 +60,18 @@ class Tables:
             cls.edge4_move = tables["edge4_move"]
             cls.edge8_move = tables["edge8_move"]
             cls.corner_move = tables["corner_move"]
-            cls.udslice_twist_prune = tables["udslice_twist_prune"]
-            cls.udslice_flip_prune = tables["udslice_flip_prune"]
-            cls.edge4_edge8_prune = tables["edge4_edge8_prune"]
-            cls.edge4_corner_prune = tables["edge4_corner_prune"]
+            cls.udslice_twist_prune = PruningTable(
+                tables["udslice_twist_prune"], cls.TWIST
+            )
+            cls.udslice_flip_prune = PruningTable(
+                tables["udslice_flip_prune"], cls.FLIP
+            )
+            cls.edge4_edge8_prune = PruningTable(
+                tables["edge4_edge8_prune"], cls.EDGE8
+            )
+            cls.edge4_corner_prune = PruningTable(
+                tables["edge4_corner_prune"], cls.CORNER
+            )
         else:
             # ----------  Phase 1 move tables  ---------- #
             cls.twist_move = cls.make_twist_table()
@@ -77,10 +98,10 @@ class Tables:
                 "edge4_move": cls.edge4_move,
                 "edge8_move": cls.edge8_move,
                 "corner_move": cls.corner_move,
-                "udslice_twist_prune": cls.udslice_twist_prune,
-                "udslice_flip_prune": cls.udslice_flip_prune,
-                "edge4_edge8_prune": cls.edge4_edge8_prune,
-                "edge4_corner_prune": cls.edge4_corner_prune,
+                "udslice_twist_prune": cls.udslice_twist_prune.table,
+                "udslice_flip_prune": cls.udslice_flip_prune.table,
+                "edge4_edge8_prune": cls.edge4_edge8_prune.table,
+                "edge4_corner_prune": cls.edge4_corner_prune.table,
             }
             with open("tables.json", "w") as f:
                 json.dump(tables, f)
@@ -192,7 +213,7 @@ class Tables:
                             count += 1
                             udslice_twist_prune[x] = depth + 1
             depth += 1
-        return udslice_twist_prune
+        return PruningTable(udslice_twist_prune, cls.TWIST)
 
     @classmethod
     def make_udslice_flip_prune(cls):
@@ -212,7 +233,7 @@ class Tables:
                             count += 1
                             udslice_flip_prune[x] = depth + 1
             depth += 1
-        return udslice_flip_prune
+        return PruningTable(udslice_flip_prune, cls.FLIP)
 
     @classmethod
     def make_edge4_edge8_prune(cls):
@@ -232,7 +253,7 @@ class Tables:
                             count += 1
                             edge4_edge8_prune[x] = depth + 1
             depth += 1
-        return edge4_edge8_prune
+        return PruningTable(edge4_edge8_prune, cls.EDGE8)
 
     @classmethod
     def make_edge4_corner_prune(cls):
@@ -252,4 +273,4 @@ class Tables:
                             count += 1
                             edge4_corner_prune[x] = depth + 1
             depth += 1
-        return edge4_corner_prune
+        return PruningTable(edge4_corner_prune, cls.CORNER)
