@@ -21,5 +21,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install nox
       - name: Lint source
+        if: matrix.python-version == 3.8
         run: |
           nox -s lint
+      - name: Check and build
+        run: |
+          nox -s build

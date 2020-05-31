@@ -1,7 +1,10 @@
-# pycache
-*__pycache__*
-
+# python artifacts
+__pycache__
 *.egg-info
+
+# build and test artifacts
+.nox
+dist
 
 # move and pruning tables
 tables.json
