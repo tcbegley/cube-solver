@@ -1,6 +1,6 @@
 # cube-solver
 
-A pure python implementation of Herbert Kociemba's two-phase algorithm for solving the Rubik's Cube
+A pure Python implementation of Herbert Kociemba's two-phase algorithm for solving the Rubik's Cube
 
 ## Installation
 
