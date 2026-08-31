@@ -1,5 +1,3 @@
-"""Cube model and, later, the lookup tables used by the solver."""
+from twophase.tables.tables import delete_tables, make_or_load_tables
 
-from twophase.tables.cubiecube import CubieCube, Moves, move, verify
-
-__all__ = ["CubieCube", "Moves", "move", "verify"]
+__all__ = ["delete_tables", "make_or_load_tables"]
