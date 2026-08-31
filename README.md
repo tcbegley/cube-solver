@@ -1,30 +1,53 @@
-# cube-solver
+# twophase
 
-A pure Python implementation of Herbert Kociemba's two-phase algorithm for solving the Rubik's Cube
+A pure-Python implementation of Herbert Kociemba's two-phase algorithm for
+solving a Rubik's Cube.
 
 ## Installation
 
-Requires Python 3. Install with
+Requires Python 3.12 or later. Add it to your `uv` project directly from GitHub:
+
+```sh
+uv add git+https://github.com/tcbegley/cube-solver.git
+```
+
+Without uv, install it with pip instead:
 
 ```sh
 pip install git+https://github.com/tcbegley/cube-solver.git
 ```
 
-Note that depending on how your system is configured, you may need to replace `pip` with `pip3` in the above command to install for Python 3.
-
 ## Usage
 
-To solve a cube, just import the `solve` method and pass a cube string.
+Pass `solve` a 54-character string that describes the cube's stickers:
 
 ```python
 from twophase import solve
 
-solve("<cube_string>")
+cube = "UUUUUUUUUBBBRRRRRRRRRFFFFFFDDDDDDDDDFFFLLLLLLLLLBBBBBB"
+print(solve(cube))  # U'
 ```
 
-Where the cube string is a 54 character string, consisting of the characters U, R, F, D, L, B (corresponding to the Upper, Right, Front, Down, Left and Back faces). Each character corresponds to one of the 54 stickers on the cube:
+> [!IMPORTANT]
+> The first solve generates the coordinate and pruning tables used by the
+> search. This can take several minutes. The tables are cached for later runs;
+> pass `cache_path` to `solve` or `solve_progressively` to store them elsewhere.
 
-```plaintext
+The result is a space-separated sequence in standard cube notation (`U`, `R2`,
+`F'`, and so on). `solve` returns `None` when it cannot find a solution within
+its limits; use `max_length` and `timeout` to adjust the default 20-move and
+10-second limits.
+
+```python
+solution = solve(cube, max_length=22, timeout=30)
+```
+
+### Cube strings
+
+A cube string contains the sticker colours `U`, `R`, `F`, `D`, `L`, and `B` in
+this order: U1–U9, R1–R9, F1–F9, D1–D9, L1–L9, B1–B9.
+
+```text
              |------------|
              |-U1--U2--U3-|
              |------------|
@@ -46,24 +69,33 @@ Where the cube string is a 54 character string, consisting of the characters U, 
              |------------|
 ```
 
-and should be specified in the order U1-U9, R1-R9, F1-F9, D1-D9, L1-L9, B1-B9.
+For example, a solved cube is:
 
-For example, a completely solved cube is represented by the string `"UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"`.
+```text
+UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB
+```
 
-`solve` will return a solution unless timeout has been reached (default is 10 seconds). Typically it will find a solution very quickly unless you set a low upper bound on the number of moves allowed. Note that the first time you run `solve`, it will precompute move tables needed for the solution which might take ~1 minute. Subsequent runs will be much faster.
+### Finding shorter solutions
 
-If you want to keep searching for better solutions, use the `solve_best` or
-`solve_best_generator` functions. `solve_best` reduces `max_length` each time a
-solution is found and continues searching for a better solution. All solutions
-found are returned in a list at the end. `solve_best_generator` creates a
-generator that yields solutions as they are found.
+`solve_progressively` yields increasingly shorter solutions until it reaches
+the time limit:
 
 ```python
-from twophase import solve_best, solve_best_generator
+from twophase import solve_progressively
 
-# returns a list of solutions
-solve_best("<cube_string>")
+for solution in solve_progressively(cube, timeout=30):
+    print(solution)
+```
 
-# creates a generator that yields solutions as they are found
-solve_best_generator("<cube_string>")
+### Lower-level interface
+
+For applications that need the cube model or moves rather than a formatted
+string, use `parse`, `Solver`, and `format_moves`:
+
+```python
+from twophase import Solver, format_moves, parse
+
+moves = Solver().solve(parse(cube))
+if moves is not None:
+    print(format_moves(moves))
 ```
