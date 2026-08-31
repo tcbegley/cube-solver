@@ -7,15 +7,15 @@ bottom-right::
 
     Face layout:         Facelet numbering:
 
-         U U U                1 2 3
-         U U U                4 5 6
-         U U U                7 8 9
+          U U U                1 2 3
+          U U U                4 5 6
+          U U U                7 8 9
     L L L F F F R R R B B B
     L L L F F F R R R B B B
     L L L F F F R R R B B B
-         D D D
-         D D D
-         D D D
+          D D D
+          D D D
+          D D D
 
 Valid characters are the face letters ``U R F D L B`` (case-insensitive).
 
