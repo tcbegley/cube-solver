@@ -1,12 +1,10 @@
 # python artifacts
-__pycache__
-*.egg-info
-
-# build and test artifacts
-.nox
 dist
+__pycache__
+*.so
+*.pyc
+*.egg-info
+.ipynb_checkpoints
 
-# move and pruning tables
-tables.json
-# legacy, code no longer generates this
-tables.pkl
+# cached tables
+*.bin

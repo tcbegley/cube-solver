@@ -1,0 +1,30 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  lint-and-test:
+    runs-on: "ubuntu-latest"
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install just
+        uses: extractions/setup-just@v2
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Cache generated tables
+        uses: actions/cache@v4
+        with:
+          path: src/twophase/tables/.cache
+          key: tables-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}-${{ hashFiles('src/twophase/constants.py', 'src/twophase/pieces.py', 'src/twophase/tables/**/*.py') }}
+      - name: Lint code
+        if: matrix.python-version == '3.13'
+        run: just lint
+      - name: Run tests
+        run: just python_version=${{ matrix.python-version }} test

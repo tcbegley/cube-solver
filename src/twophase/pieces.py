@@ -1,7 +1,13 @@
+"""
+Enums to represent different pieces of the cube.
+"""
+
+from collections.abc import Iterable
 from enum import IntEnum
 
 
 class Color(IntEnum):
+    NULL = -1
     U = 0
     R = 1
     F = 2
@@ -11,6 +17,7 @@ class Color(IntEnum):
 
 
 class Corner(IntEnum):
+    NULL = -1
     URF = 0
     UFL = 1
     ULB = 2
@@ -22,6 +29,7 @@ class Corner(IntEnum):
 
 
 class Edge(IntEnum):
+    NULL = -1
     UR = 0
     UF = 1
     UL = 2
@@ -37,6 +45,8 @@ class Edge(IntEnum):
 
 
 class Facelet(IntEnum):
+    NULL = -1
+
     U1 = 0
     U2 = 1
     U3 = 2
@@ -46,6 +56,7 @@ class Facelet(IntEnum):
     U7 = 6
     U8 = 7
     U9 = 8
+
     R1 = 9
     R2 = 10
     R3 = 11
@@ -55,6 +66,7 @@ class Facelet(IntEnum):
     R7 = 15
     R8 = 16
     R9 = 17
+
     F1 = 18
     F2 = 19
     F3 = 20
@@ -64,6 +76,7 @@ class Facelet(IntEnum):
     F7 = 24
     F8 = 25
     F9 = 26
+
     D1 = 27
     D2 = 28
     D3 = 29
@@ -73,6 +86,7 @@ class Facelet(IntEnum):
     D7 = 33
     D8 = 34
     D9 = 35
+
     L1 = 36
     L2 = 37
     L3 = 38
@@ -82,6 +96,7 @@ class Facelet(IntEnum):
     L7 = 42
     L8 = 43
     L9 = 44
+
     B1 = 45
     B2 = 46
     B3 = 47
@@ -91,3 +106,48 @@ class Facelet(IntEnum):
     B7 = 51
     B8 = 52
     B9 = 53
+
+
+_FACES = "URFDLB"
+_SUFFIXES = ("", "2", "'")
+
+
+class Move(IntEnum):
+    NULL = -1
+
+    U1 = 0
+    U2 = 1
+    U3 = 2
+
+    R1 = 3
+    R2 = 4
+    R3 = 5
+
+    F1 = 6
+    F2 = 7
+    F3 = 8
+
+    D1 = 9
+    D2 = 10
+    D3 = 11
+
+    L1 = 12
+    L2 = 13
+    L3 = 14
+
+    B1 = 15
+    B2 = 16
+    B3 = 17
+
+    def __str__(self) -> str:
+        """Standard cube notation: ``U``, ``R2``, ``F'``, etc."""
+        return _FACES[self // 3] + _SUFFIXES[self % 3]
+
+
+def format_moves(moves: Iterable[Move]) -> str:
+    """Format a sequence of moves as a human-readable string.
+
+    >>> format_moves([Move.L3, Move.U3, Move.R2])
+    "L' U' R2"
+    """
+    return " ".join(str(m) for m in moves)
